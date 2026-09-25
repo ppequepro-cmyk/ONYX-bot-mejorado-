@@ -1,0 +1,10 @@
+node_modules/
+sessions/
+sessions-backup/
+conexiones/
+.env
+*.key
+*.pem
+memoria/
+usuarios/
+database.json
