@@ -10,9 +10,6 @@ function esOwner(jid) {
     return jid === OWNER_JID;
 }
 
-function esOwner(jid) {
-    return jid === OWNER_JID;
-}
 
 function esPremium(jid) {
     if (esOwner(jid)) return true;
@@ -73,7 +70,8 @@ function quitarPremium(jid) {
     return usuario;
 }
 
-module.exports = {
+    module.exports = {
+    establecerOwner,
     esOwner,
     esPremium,
     obtenerPlan,
