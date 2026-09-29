@@ -1,0 +1,2 @@
+async function handler(conn,{message}){const jid=message.key.remoteJid;if(!jid.endsWith("@g.us"))return conn.sendMessage(jid,{text:"⚠️ Este comando solo funciona en grupos."},{quoted:message});const meta=await conn.groupMetadata(jid);const rules=meta.desc?.trim()||"📋 Este grupo todavía no tiene reglas configuradas.";await conn.sendMessage(jid,{text:"📜 *REGLAS DEL GRUPO*\n\n"+rules},{quoted:message})}
+module.exports={command:"rules",handler};
