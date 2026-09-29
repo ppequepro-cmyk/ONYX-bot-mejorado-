@@ -39,5 +39,5 @@ async function handler(conn,{message}){const jid=message.key.remoteJid,u=message
 • /restart
 
 ━━━━━━━━━━━━━━━━━━━━
-        ı.ᴀᴍ.oɴʏxᴋıɴɢ👑`;await conn.sendMessage(jid,{text:menu,quoted:message})}
+        ı.ᴀᴍ.oɴʏxᴋıɴɢ👑`;await conn.sendMessage(jid,{image:{url:"https://raw.githubusercontent.com/Neveloopp/data/master/uploads/mulz7mll-edab24cdeeaf.jpg"},caption:menu,quoted:message})}
 module.exports={command:"menu",handler};
