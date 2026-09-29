@@ -51,6 +51,15 @@ Cada subbot utiliza su propia sesión, manteniendo separada la autenticación de
 | Premium | `/plan` · `/premium` · `/beneficios` |
 | Owner | `/owner` · `/addprem` · `/delprem` · `/restart` |
 
+## ◈ REDES SOCIALES
+
+<div align="center">
+
+[![TikTok](https://img.shields.io/badge/TikTok-%40pequepequepro-111111?style=for-the-badge&logo=tiktok&logoColor=white)](https://www.tiktok.com/@pequepequepro)
+[![Instagram](https://img.shields.io/badge/Instagram-%40emma.l.121-111111?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/emma.l.121)
+
+</div>
+
 ## ◈ IDENTIDAD
 
 **Modular. Escalable. Independiente.**
