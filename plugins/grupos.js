@@ -4,7 +4,7 @@ const ADMIN_REQUIRES = new Set([
   "antilinkon","antilinkoff","warnuser","unwarnuser","clearwarnings","resetwarnings","anuncio","configgrupo"
 ]);
 
-const commands = ["grupo","infogrupo","idgrupo","linkgrupo","revokelink","adminsgrupo","miembrosgrupo","tagall","hidetag","tagadmins","kickuser","adduser","promoteuser","demoteuser","mutechat","unmutechat","cerrarchat","abrirchat","soloadmins","todoschat","setgruponombre","setgrupodesc","reglasgrupo","setreglas","setwelcome","getwelcome","setgoodbye","getgoodbye","welcomeon","welcomeoff","goodbyeon","goodbyeoff","antilinkon","antilinkoff","warnuser","unwarnuser","warningsuser","clearwarnings","listwarnings","resetwarnings","anuncio","encuesta","adminsinfo","ownergrupo","creadorgrupo","tipochat","horariogrupo","notasgrupo","comandosgrupo","seguridadgrupo","configgrupo"];
+const commands = ["grupo","infogrupo","idgrupo","linkgrupo","revokelink","adminsgrupo","miembrosgrupo","tagall","hidetag","tagadmins","kickuser","adduser","promoteuser","demoteuser","mutechat","unmutechat","cerrarchat","abrirchat","soloadmins","todoschat","setgruponombre","setgrupodesc","reglasgrupo","setreglas","setwelcome","getwelcome","setgoodbye","getgoodbye","welcomeon","welcomeoff","goodbyeon","goodbyeoff","antilinkon","antilinkoff","warnuser","unwarnuser","warningsuser","clearwarnings","listwarnings","resetwarnings","anuncio","adminsinfo","ownergrupo","creadorgrupo","tipochat","horariogrupo","notasgrupo","comandosgrupo","seguridadgrupo","configgrupo"];
 
 const state = global.__ONYX_GROUP_STATE || (global.__ONYX_GROUP_STATE = {
   rules: Object.create(null),
