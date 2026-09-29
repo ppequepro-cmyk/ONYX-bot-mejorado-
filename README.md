@@ -125,7 +125,7 @@ ONYX-BOT tiene una portada principal independiente y un catálogo completo de co
 - **/menubtns** → catálogo con botones y navegación.
 - **/menunrml** → catálogo en texto.
 
-El catálogo central contiene **112 comandos registrados**. Los comandos que dependen de permisos de grupo, datos externos, multimedia o servicios de terceros deben probarse en su entorno correspondiente.
+El catálogo central contiene **229 comandos registrados**. Los comandos que dependen de permisos de grupo, datos externos, multimedia o servicios de terceros deben probarse en su entorno correspondiente.
 
 ## ◈ COMANDOS PRINCIPALES
 
@@ -137,7 +137,7 @@ El catálogo central contiene **112 comandos registrados**. Los comandos que dep
 | 🛠️ Utilidades | `/ping`, `/uptime`, `/menu`, `/stats`, `/health` |
 | 🤖 Subbots | `/subbot list`, `/subbot create`, `/subbot start` |
 | 💎 Premium | `/plan`, `/premium`, `/beneficios` |
-| 👑 Owner | `/addprem`, `/delprem`, `/restart` |
+| 👑 Owner | `/addprem`, `/delprem`, `/autoadmin`, `/restart` |
 
 ## ◈ SEGURIDAD
 
@@ -186,9 +186,9 @@ ONYX-bot-mejorado-/
 └── database.json      # local, no subir a Git
 ```
 
-## ◈ PRUEBA DE LOS 112 COMANDOS
+## ◈ PRUEBA DEL CATÁLOGO
 
-La prueba se realiza directamente desde WhatsApp. Ejecuta `/menu 1` hasta `/menu 6` para comprobar que las 112 entradas aparecen en el catálogo.
+La prueba se realiza directamente desde WhatsApp. Ejecuta `/menu 1` hasta `/menu 12` para comprobar el catálogo completo. `/autoadmin` está restringido al owner y solo funciona en grupos donde el owner sea administrador.
 
 ### Lista de comandos habilitados
 
