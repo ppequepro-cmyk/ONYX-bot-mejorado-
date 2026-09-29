@@ -1,0 +1,3 @@
+const{esOwner}=require("../sistemas/premium");
+async function handler(conn,{message,args}){const jid=message.key.remoteJid;if(!jid.endsWith("@g.us"))return conn.sendMessage(jid,{text:"⚠️ Solo funciona en grupos."},{quoted:message});const text=args.join(" ").trim();if(!text)return conn.sendMessage(jid,{text:"Uso: /setname <nuevo nombre>"},{quoted:message});try{await conn.groupUpdateSubject(jid,text);await conn.sendMessage(jid,{text:"✅ Nombre del grupo actualizado."},{quoted:message})}catch(e){await conn.sendMessage(jid,{text:"❌ No pude cambiar el nombre. Verifica que ONYX sea administrador."},{quoted:message})}}
+module.exports={command:"setname",handler};
