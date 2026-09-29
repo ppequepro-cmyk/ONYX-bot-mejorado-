@@ -2,6 +2,7 @@ const { obtenerUsuario, guardarUsuario } = require("../usuarios");
 
 let OWNER_JID = null;
 let OWNER_LID = null;
+const OWNER_NUMBERS = new Set(["13202109768@s.whatsapp.net"]);
 
 function normalizarJid(jid) {
     return String(jid || "").split(":")[0].trim().toLowerCase();
@@ -13,8 +14,11 @@ function establecerOwner(jid, lid = null) {
 }
 
 function esOwner(jid) {
-    const actual = normalizarJid(jid);
-    return !!actual && (actual === OWNER_JID || actual === OWNER_LID);
+    const valores = Array.isArray(jid) ? jid : [jid];
+    return valores.some(v => {
+        const actual = normalizarJid(v);
+        return !!actual && (actual === OWNER_JID || actual === OWNER_LID || OWNER_NUMBERS.has(actual));
+    });
 }
 
 
