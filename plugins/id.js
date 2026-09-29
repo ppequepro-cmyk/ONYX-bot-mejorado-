@@ -1,0 +1,1 @@
+async function handler(conn,{message}){const jid=message.key.remoteJid,sender=message.key.participant||jid;await conn.sendMessage(jid,{text:"🆔 JID: "+sender+"\n💬 Chat: "+jid},{quoted:message})}module.exports={command:"id",handler};
