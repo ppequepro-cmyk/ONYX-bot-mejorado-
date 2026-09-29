@@ -1,0 +1,2 @@
+async function handler(conn,{message,args}){const jid=message.key.remoteJid;const text=args.join(" ").trim();if(!text)return conn.sendMessage(jid,{text:"Uso: /commands <texto>"},{quoted:message});await conn.sendMessage(jid,{text:"🛠️ ONYX /commands\n\n"+text},{quoted:message})}
+module.exports={command:"commands",handler};
