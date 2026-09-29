@@ -1,0 +1,2 @@
+async function handler(conn,{message,args}){const jid=message.key.remoteJid;const text=args.join(" ").trim();if(!text)return conn.sendMessage(jid,{text:"Uso: /groupid <texto>"},{quoted:message});await conn.sendMessage(jid,{text:"🛠️ ONYX /groupid\n\n"+text},{quoted:message})}
+module.exports={command:"groupid",handler};
