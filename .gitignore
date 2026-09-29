@@ -2,6 +2,8 @@ node_modules/
 sessions/
 sessions-backup/
 conexiones/
+subbots/*/sessions/
+subbots/subbots.json
 .env
 *.key
 *.pem
