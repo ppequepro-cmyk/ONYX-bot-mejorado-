@@ -1,0 +1,1 @@
+async function handler(conn,{message}){await conn.sendMessage(message.key.remoteJid,{text:"💎 ONYX PREMIUM\n\n• Funciones premium\n• Herramientas avanzadas\n• Integración con ONYX,IA\n• Duración administrada por el Owner"})}module.exports={command:"beneficios",handler};
