@@ -1,122 +1,43 @@
-const { obtenerUsuario } = require("../usuarios");
-const { obtenerPlan } = require("../sistemas/premium");
-
-async function handler(conn, { message }) {
-    const jid = message.key.remoteJid;
-    const usuarioJid =
-        message.key.participant ||
-        jid;
-
-    const usuario = obtenerUsuario(usuarioJid) || {};
-    const plan = obtenerPlan(usuarioJid);
-
-    const nombre =
-        message.pushName ||
-        usuario.nombre ||
-        "Usuario";
-
-    const menu = `
-╔══════════════════════════════╗
+const{obtenerUsuario}=require("../usuarios");const{obtenerPlan}=require("../sistemas/premium");
+async function handler(conn,{message}){const jid=message.key.remoteJid,u=message.key.participant||jid,user=obtenerUsuario(u)||{},plan=obtenerPlan(u),nombre=message.pushName||user.nombre||"Usuario";const menu=`╔══════════════════════════════╗
 ║        ☠️  ONYX-BOT  ☠️       ║
 ╚══════════════════════════════╝
 
-        ◈ SYSTEM ONLINE ◈
-     ⚡ IA • GRUPOS • CONTROL ⚡
+👤 *USUARIO*
+• Nombre: ${nombre}
+• Plan: ${plan.toUpperCase()}
 
-╭━━━━━━〔 👤 USUARIO 〕━━━━━━╮
-┃ ◈ Nombre: ${nombre}
-┃ ◈ Plan: ${plan.toUpperCase()}
-┃ ◈ Estado: 🟢 ONLINE
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+🧠 *ONYX,IA*
+• /ia <texto>
+• /iareset
 
-╭━━━━━━〔 🧠 ONYX,IA 〕━━━━━━╮
-┃ ◈ /ia <texto>
-┃ ◈ /iareset
-┃ ◈ /aichat
-┃ ◈ /preguntar
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+👥 *GRUPOS*
+• /tagall
+• /hidetag
+• /add 521XXXXXXXXXX
+• /kick @usuario
+• /promote @usuario
+• /demote @usuario
+• /mute @usuario
+• /warn @usuario
+• /welcome on|off
+• /goodbye on|off
+• /antilink on|off
 
-╭━━━━━━〔 👥 GRUPOS 〕━━━━━━╮
-┃ ◈ /tagall
-┃ ◈ /hidetag
-┃ ◈ /kick
-┃ ◈ /promote
-┃ ◈ /demote
-┃ ◈ /welcome on
-┃ ◈ /welcome off
-┃ ◈ /link
-┃ ◈ /infogrupo
-╰━━━━━━━━━━━━━━━━━━━━━━━━━╯
+⚙️ *UTILIDADES*
+• /ping
+• /menu
 
-╭━━━━〔 ⚔️ PERFIL & RANK 〕━━━━╮
-┃ ◈ /perfil
-┃ ◈ /nivel
-┃ ◈ /rank
-┃ ◈ /exp
-┃ ◈ /top
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+💎 *PREMIUM*
+• /plan
+• /premium
+• /beneficios
 
-╭━━━━━━〔 🎮 GAMES 〕━━━━━━╮
-┃ ◈ /dado
-┃ ◈ /coin
-┃ ◈ /8ball
-┃ ◈ /reto
-┃ ◈ /quiz
-┃ ◈ /suerte
-╰━━━━━━━━━━━━━━━━━━━━━━━━━╯
+👑 *OWNER*
+• /addprem
+• /delprem
+• /restart
 
-╭━━━━━━〔 ⚙️ UTILIDADES 〕━━━━╮
-┃ ◈ /ping
-┃ ◈ /info
-┃ ◈ /menu
-┃ ◈ /sticker
-┃ ◈ /toimg
-┃ ◈ /tts
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
-
-╭━━━━━━〔 💎 PREMIUM 〕━━━━━━╮
-┃ ◈ /plan
-┃ ◈ /premium
-┃ ◈ /beneficios
-┃ ◈ /estado
-╰━━━━━━━━━━━━━━━━━━━━━━━━━╯
-
-╭━━━━━━〔 👑 OWNER 〕━━━━━━╮
-┃ ◈ /addprem
-┃ ◈ /delprem
-┃ ◈ /broadcast
-┃ ◈ /restart
-┃ ◈ /stats
-╰━━━━━━━━━━━━━━━━━━━━━━━━━╯
-
-╭━━━━━━〔 ⚡ ONYX CORE 〕━━━━━━╮
-┃ ◈ Inteligencia artificial
-┃ ◈ Automatización para grupos
-┃ ◈ Sistema de perfiles
-┃ ◈ Sistema Premium
-┃ ◈ Entretenimiento
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
-
-╔══════════════════════════════╗
-║                              ║
-║       「 SOMOS ONYX 」        ║
-║       「 SOMOS LEGIÓN 」      ║
-║                              ║
-║   「 NO BUSCAMOS SER VISTOS 」║
-║ 「 BUSCAMOS SER RECORDADOS 」 ║
-║                              ║
-╚══════════════════════════════╝
-
-             ı.ᴀᴍ.oɴʏxᴋıɴɢ👑
-`;
-
-    await conn.sendMessage(jid, {
-        text: menu,
-        quoted: message
-    });
-}
-
-module.exports = {
-    command: "menu",
-    handler
-};
+━━━━━━━━━━━━━━━━━━━━
+        ı.ᴀᴍ.oɴʏxᴋıɴɢ👑`;await conn.sendMessage(jid,{text:menu,quoted:message})}
+module.exports={command:"menu",handler};
