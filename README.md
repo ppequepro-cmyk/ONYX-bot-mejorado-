@@ -60,6 +60,18 @@ Cada subbot utiliza su propia sesión, manteniendo separada la autenticación de
 
 </div>
 
+## ◈ CONTACTO
+
+<div align="center">
+
+### 💬 Dudas, soporte o quejas
+
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-Contactar%20CEO-111111?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/13202109768?text=Hola%20CEO%20de%20ONYX-BOT)
+
+**Mensaje automático:** Hola CEO de ONYX-BOT
+
+</div>
+
 ## ◈ IDENTIDAD
 
 **Modular. Escalable. Independiente.**
