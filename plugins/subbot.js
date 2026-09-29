@@ -1,0 +1,8 @@
+const{esOwner}=require("../sistemas/premium");const{create,stop,remove,list}=require("../subbots/manager");
+async function handler(conn,{message,args}){const jid=message.key.remoteJid,sender=message.key.participant||jid;if(!esOwner(sender))return conn.sendMessage(jid,{text:"⛔ Solo el owner puede administrar subbots."},{quoted:message});const sub=(args.shift()||"").toLowerCase();
+if(sub==="list"){const bots=list();return conn.sendMessage(jid,{text:bots.length?"🤖 SUBBOTS\n\n"+bots.map(b=>"• "+b.name+": "+b.status).join("\n"):"🤖 No hay subbots registrados."},{quoted:message})}
+if(sub==="create"){const name=args.shift(),phone=args.shift();if(!name||!phone)return conn.sendMessage(jid,{text:"Uso: /subbot create <nombre> <número>"},{quoted:message});try{const b=await create(name,phone,async()=>{});return conn.sendMessage(jid,{text:"🤖 Subbot "+b.name+" creado.\n📲 Código de emparejamiento: "+(b.pairingCode||"sesión existente")},{quoted:message})}catch(e){return conn.sendMessage(jid,{text:"❌ "+e.message},{quoted:message})}}
+if(sub==="stop"){const name=args.shift();if(!name)return conn.sendMessage(jid,{text:"Uso: /subbot stop <nombre>"},{quoted:message});await stop(name);return conn.sendMessage(jid,{text:"🛑 Subbot detenido."},{quoted:message})}
+if(sub==="remove"){const name=args.shift();if(!name)return conn.sendMessage(jid,{text:"Uso: /subbot remove <nombre>"},{quoted:message});const ok=await remove(name);return conn.sendMessage(jid,{text:ok?"🗑️ Subbot eliminado del registro.":"❌ Subbot no encontrado."},{quoted:message})}
+return conn.sendMessage(jid,{text:"🤖 SUBBOT\n/subbot list\n/subbot create <nombre> <número>\n/subbot stop <nombre>\n/subbot remove <nombre>"},{quoted:message})}
+module.exports={command:"subbot",handler};
