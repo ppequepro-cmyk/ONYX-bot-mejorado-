@@ -23,10 +23,25 @@ async function handler(conn,{message}){const jid=message.key.remoteJid,u=message
 • /welcome on|off
 • /goodbye on|off
 • /antilink on|off
+• /rules
+• /grouplink
+• /setname <nombre>
+• /setdesc <descripción>
 
-⚙️ *UTILIDADES*
+🛠️ *UTILIDADES*
 • /ping
+• /uptime
 • /menu
+
+🤖 *SUBBOTS*
+• /subbot list
+• /subbot create <nombre> <número>
+• /subbot start <nombre>
+• /subbot stop <nombre>
+• /subbot remove <nombre>
+• /subbot allow <nombre> <comando>
+• /subbot deny <nombre> <comando>
+• /subbot commands <nombre>
 
 💎 *PREMIUM*
 • /plan
