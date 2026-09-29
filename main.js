@@ -15,7 +15,14 @@ async function sendMedia(c,t,m,caption="",type="image"){if(type==="image")return
 async function sendMessage(c,t,m,type="text"){if(type==="text")return sendText(c,t,m);if(type==="image")return sendImage(c,t,m);if(type==="sticker")return sendSticker(c,t,m);if(type==="audio")return sendAudio(c,t,m);if(type==="video")return sendVideo(c,t,m);return sendText(c,t,"Tipo de mensaje no soportado")}
 function loadPlugins(){plugins={};for(const file of fs.readdirSync(pathPlugins)){if(!file.endsWith(".js")||file.startsWith("_"))continue;try{const full="./"+pathPlugins+"/"+file;delete require.cache[require.resolve(full)];const command=require(full);if(command?.command&&typeof command.handler==="function"){const key=String(command.command).toLowerCase().replace(/^\//,"");if(!plugins[key])plugins[key]=command}else if(Array.isArray(command?.commands)&&typeof command.handler==="function"){for(const cmd of command.commands){const key=String(cmd||"").toLowerCase().replace(/^\//,"");if(key&&!plugins[key])plugins[key]={...command,command:key}}}else console.warn("Plugin inválido:",file)}catch(e){console.error("Error cargando",file,e.message)}}console.log("🔌 Plugins:",Object.keys(plugins).sort().join(", ")||"ninguno")}
 fs.watch(pathPlugins,{recursive:true},(eventType,filename)=>{if(filename?.endsWith(".js"))loadPlugins()});loadPlugins();
-async function logEvent(conn,m,type,user="Desconocido",groupName=""){console.log(chalk.bold.cyan("━━━━━━━━━━ ONYX LOGS ━━━━━━━━━━")+"\n"+chalk.blue("│⏰ ")+chalk.green(new Date().toLocaleString("es-MX",{timeZone:"America/Mexico_City"}))+"\n"+chalk.cyan("│📑 ")+chalk.white(type)+(m.key.remoteJid?.endsWith("@g.us")?"\n"+chalk.green("│👥 ")+chalk.white(groupName)+" ➜ "+m.key.remoteJid:"\n"+chalk.magenta("│💌 ")+chalk.white(user))}
+async function logEvent(conn,m,type,user="Desconocido",groupName=""){
+ const location=m.key.remoteJid?.endsWith("@g.us");
+ const log=chalk.bold.cyan("━━━━━━━━━━ ONYX LOGS ━━━━━━━━━━")+"\n"+
+ chalk.blue("│⏰ ")+chalk.green(new Date().toLocaleString("es-MX",{timeZone:"America/Mexico_City"}))+"\n"+
+ chalk.cyan("│📑 ")+chalk.white(type)+
+ (location?"\n"+chalk.green("│👥 ")+chalk.white(groupName)+" ➜ "+m.key.remoteJid:"\n"+chalk.magenta("│💌 ")+chalk.white(user));
+ console.log(log);
+}
 async function handleMessage(conn,message){const msg=message.message,key=message.key,from=key.remoteJid;if(!from||!msg)return;const group=from.endsWith("@g.us"),user=key.participant||from;let groupName="";if(group){try{groupName=(await conn.groupMetadata(from)).subject}catch{}}
 const buttonId=msg.buttonsResponseMessage?.selectedButtonId||msg.templateButtonReplyMessage?.selectedId||msg.listResponseMessage?.singleSelectReply?.selectedRowId||null;
 const body=msg.conversation||msg.extendedTextMessage?.text||msg.imageMessage?.caption||msg.videoMessage?.caption||buttonId||null;
