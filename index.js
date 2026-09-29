@@ -73,8 +73,9 @@ async function startBot() {
                 }
                 console.log(chalk.magenta(data));
                 console.log(`Bot conectado como ${socket.user.id}`);
-                establecerOwner(socket.user.id);
+                establecerOwner(socket.user.id, socket.user.lid);
                 console.log(`👑 OWNER JID: ${socket.user.id}`);
+                console.log(`👑 OWNER LID: ${socket.user.lid || "no disponible"}`);
                 startSubbots().filter(b=>b.status!=="online").forEach(b=>startExistingSubbot(b.id,async(id,sock,msg)=>{try{const main=require("./main.js");await main.handleMessage(sock,msg)}catch(e){console.error("Subbot "+id+":",e.message)}}).catch(e=>console.error("Subbot "+b.id+":",e.message)));
             });
         }
