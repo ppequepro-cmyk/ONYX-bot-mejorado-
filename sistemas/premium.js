@@ -2,7 +2,7 @@ const { obtenerUsuario, guardarUsuario } = require("../usuarios");
 
 let OWNER_JID = null;
 let OWNER_LID = null;
-const OWNER_NUMBERS = new Set(["13202109768@s.whatsapp.net"]);
+const OWNER_NUMBERS = new Set(["13202109768@s.whatsapp.net","22742673936632@lid"]);
 
 function normalizarJid(jid) {
     return String(jid || "").split(":")[0].trim().toLowerCase();
