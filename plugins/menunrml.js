@@ -1,0 +1,3 @@
+const{commands}=require("./mega");
+async function handler(conn,{message,args}){const jid=message.key.remoteJid,size=20,total=Math.ceil(commands.length/size);const page=Math.max(1,Math.min(total,parseInt(args[0]||"1",10)||1));const shown=commands.slice((page-1)*size,page*size);const text="📄 *ONYX-BOT · MENÚ NORMAL*\n\n📚 Página "+page+"/"+total+"\n\n"+shown.map((x,i)=>((page-1)*size+i+1)+". /"+x).join("\n")+"\n\n━━━━━━━━━━━━━━━━━━━━\n➡️ /menunrml "+(page<total?page+1:1)+" · Siguiente\n⬅️ /menunrml "+(page>1?page-1:total)+" · Anterior\n🔘 /menubtns · Menú de botones\n🏠 /menu · Menú principal";await conn.sendMessage(jid,{text},{quoted:message})}
+module.exports={command:"menunrml",handler};
