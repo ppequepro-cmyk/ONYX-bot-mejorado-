@@ -99,18 +99,33 @@ Los comandos administrativos sensibles permanecen bloqueados para los subbots po
 
 ## ◈ MENÚ
 
-El menú principal está organizado por categorías y el catálogo se divide en páginas para evitar convertir WhatsApp en una novela rusa.
+ONYX-BOT tiene una portada principal independiente y un catálogo completo de comandos.
 
-```
-/menu
-/menu 1
-/menu 2
-/menu 3
-/menu 4
-/menu 5
-```
+### 🖤 Panel principal
 
-El catálogo central contiene **112 comandos registrados y habilitados por el cargador de plugins**. Los comandos que dependen de permisos de grupo, datos externos, multimedia o servicios de terceros deben probarse en su entorno correspondiente.
+    /menux
+
+`/menux` muestra el panel visual de ONYX-BOT con la información de los sistemas creados y un único botón **📋 MENÚ** para abrir el catálogo completo.
+
+### 📋 Catálogo
+
+    /menu
+    /menu 1
+    /menu 2
+    /menu 3
+    /menu 4
+    /menu 5
+    /menu 6
+    /menubtns
+    /menunrml
+
+- **/menu** → menú tradicional.
+- **/menux** → portada visual principal.
+- **📋 MENÚ** → abre el catálogo interactivo.
+- **/menubtns** → catálogo con botones y navegación.
+- **/menunrml** → catálogo en texto.
+
+El catálogo central contiene **112 comandos registrados**. Los comandos que dependen de permisos de grupo, datos externos, multimedia o servicios de terceros deben probarse en su entorno correspondiente.
 
 ## ◈ COMANDOS PRINCIPALES
 
