@@ -173,7 +173,7 @@ ONYX-bot-mejorado-/
 
 ## ◈ PRUEBA DE LOS 112 COMANDOS
 
-La prueba se realiza directamente desde WhatsApp. Ejecuta [0m`/menu 1` hasta `/menu 6` para comprobar que las 112 entradas aparecen en el catálogo.
+La prueba se realiza directamente desde WhatsApp. Ejecuta `/menu 1` hasta `/menu 6` para comprobar que las 112 entradas aparecen en el catálogo.
 
 ### Lista de comandos habilitados
 
