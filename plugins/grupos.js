@@ -19,7 +19,7 @@ const isGroup = (message) => String(message.key.remoteJid || "").endsWith("@g.us
 const getMeta = async (conn, jid) => conn.groupMetadata(jid);
 const admins = (meta) => new Set((meta.participants || []).filter(p => p.admin === "admin" || p.admin === "superadmin").map(p => p.id));
 const senderIsAdmin = (meta, message) => admins(meta).has(jidUser(message));
-const botIsAdmin = (meta, conn) => admins(meta).has(conn.user?.id?.split(":")[0] + "@s.whatsapp.net") || admins(meta).has(String(conn.user?.id || "").split(":")[0] + "@s.whatsapp.net");
+const botIsAdmin = (meta, conn) => { const raw=String(conn.user?.id||"").split(":")[0]; const bot=raw.includes("@")?raw:raw+"@s.whatsapp.net"; return admins(meta).has(bot); };
 
 function targetFrom(args, message) {
   const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
