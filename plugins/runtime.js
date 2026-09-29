@@ -1,0 +1,2 @@
+async function handler(conn,{message}){await conn.sendMessage(message.key.remoteJid,{text:"⏱️ Consulta /uptime para ver el tiempo activo."},{quoted:message})}
+module.exports={command:"runtime",handler};
