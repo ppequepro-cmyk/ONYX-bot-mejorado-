@@ -1,0 +1,2 @@
+async function handler(conn,{message}){await conn.sendMessage(message.key.remoteJid,{text:"🌎 Zona horaria configurada: America/Mexico_City"},{quoted:message})}
+module.exports={command:"timezone",handler};
