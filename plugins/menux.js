@@ -1,1 +1,3 @@
-async function handler(conn,{message}){const jid=message.key.remoteJid;const text="╔══════════════════════════════╗\n║          🖤 ONYX-BOT         ║\n╚══════════════════════════════╝\n\n📌 *Información de todo lo que hemos creado*\n\n🤖 112+ comandos\n💎 Sistema Premium\n🤖 Sistema de Subbots\n🧠 ONYX,IA\n🛡️ Administración y seguridad\n🛠️ Herramientas y utilidades\n\n━━━━━━━━━━━━━━━━━━━━\n\n📋 /menu · Menú completo\n🔘 /menubtns · Menú de botones\n📄 /menunrml · Menú normal\n\n👑 ı.ᴀᴍ.oɴʏxᴋıɴɢ👑";await conn.sendMessage(jid,{text},{quoted:message})}module.exports={command:"menux",handler};
+// Menú experimental desactivado para no interferir con el menú original.
+// El menú oficial de ONYX-BOT sigue en plugins/menu.js.
+module.exports={disabled:true};
