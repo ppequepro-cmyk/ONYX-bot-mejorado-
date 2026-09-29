@@ -1,0 +1,2 @@
+async function handler(conn,{message}){const jid=message.key.remoteJid;if(!jid.endsWith("@g.us"))return conn.sendMessage(jid,{text:"⚠️ Este comando solo funciona en grupos."},{quoted:message});try{const code=await conn.groupInviteCode(jid);await conn.sendMessage(jid,{text:"🔗 *ENLACE DEL GRUPO*\nhttps://chat.whatsapp.com/"+code},{quoted:message})}catch(e){await conn.sendMessage(jid,{text:"❌ No pude obtener el enlace. ONYX necesita permisos de administrador."},{quoted:message})}}
+module.exports={command:"grouplink",handler};
