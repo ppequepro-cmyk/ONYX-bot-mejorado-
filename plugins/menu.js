@@ -1,4 +1,107 @@
-const{obtenerUsuario}=require("../usuarios");const{obtenerPlan}=require("../sistemas/premium");const{commands:megaCommands}=require("./mega");
-const MENU_AUDIO="https://www.image2url.com/r2/default/audio/1790667139010-dfa877b0-5322-4852-b6b8-dd13a970ec5a.mp3";const MENU_VIDEO="https://videotourl.com/videos/1790668998884-34d58391-c3c3-4308-8835-7d330e569cea.mp4";
-async function handler(conn,{message,args}){const jid=message.key.remoteJid,u=message.key.participant||jid,user=obtenerUsuario(u)||{},plan=obtenerPlan(u),nombre=message.pushName||user.nombre||"Usuario";const size=20,total=Math.ceil(megaCommands.length/size);const page=Math.max(1,Math.min(total,parseInt(args[0]||"1",10)||1));const groups=[["🧠 IA",["ia","iareset"]],["👥 GRUPOS",["grupo","infogrupo","idgrupo","linkgrupo","revokelink","adminsgrupo","miembrosgrupo","tagall","hidetag","tagadmins","kickuser","adduser","promoteuser","demoteuser","mutechat","unmutechat","cerrarchat","abrirchat","soloadmins","todoschat","setgruponombre","setgrupodesc","reglasgrupo","setreglas","setwelcome","getwelcome","setgoodbye","getgoodbye","welcomeon","welcomeoff","goodbyeon","goodbyeoff","antilinkon","antilinkoff","warnuser","unwarnuser","warningsuser","clearwarnings","listwarnings","resetwarnings","anuncio","adminsinfo","ownergrupo","creadorgrupo","tipochat","horariogrupo","notasgrupo","comandosgrupo","seguridadgrupo","configgrupo"]],["🛠️ UTILIDADES",["ping","uptime","menu","menubtns","menunrml","alive","botinfo","version","time","date","timezone","jid","runtime","stats","health","memory","serverinfo"]],["🤖 SUBBOTS",["subbot list","subbot create <nombre> <número>","subbot start <nombre>","subbot stop <nombre>","subbot remove <nombre>","subbot allow <nombre> <comando>","subbot deny <nombre> <comando>","subbot commands <nombre>"]],["💎 PREMIUM",["plan","premium","beneficios","premiuminfo"]],["👑 OWNER",["addprem","delprem","autoadmin","restart"]]];const base=groups.map(([h,cs])=>h+"\n"+cs.map(x=>"• /"+x).join("\n")).join("\n\n");const shown=megaCommands.slice((page-1)*size,page*size);const catalog="\n\n📚 *CATÁLOGO ONYX* · Página "+page+"/"+total+"\n"+shown.map(x=>"• /"+x).join("\n");const menu="╔══════════════════════════════╗\n║        ☠️  ONYX-BOT  ☠️       ║\n╚══════════════════════════════╝\n\n☠️ *ONYX-BOT*\n🤖 Bot de WhatsApp · IA · Premium · Automatizado\n\n👤 *USUARIO*\n• Nombre: "+nombre+"\n• Plan: "+String(plan).toUpperCase()+"\n\n"+base+catalog+"\n\n━━━━━━━━━━━━━━━━━━━━\n👑 ı.ᴀᴍ.oɴʏxᴋıɴɢ👑";try{await conn.sendMessage(jid,{audio:{url:MENU_AUDIO},mimetype:"audio/mpeg",ptt:false},{quoted:message})}catch(e){console.error("⚠️ Audio del menú no disponible:",e.message)}await conn.sendMessage(jid,{video:{url:MENU_VIDEO},mimetype:"video/mp4"},{quoted:message});await conn.sendMessage(jid,{text:menu},{quoted:message})}
-module.exports={command:"menu",handler};
+const { obtenerUsuario } = require("../usuarios");
+const { obtenerPlan } = require("../sistemas/premium");
+const { commands: megaCommands } = require("./mega");
+
+const MENU_AUDIO = "https://www.image2url.com/r2/default/audio/1790667139010-dfa877b0-5322-4852-b6b8-dd13a970ec5a.mp3";
+const MENU_VIDEO = "https://videotourl.com/videos/1790668998884-34d58391-c3c3-4308-8835-7d330e569cea.mp4";
+
+async function handler(conn, { message, args }) {
+  const jid = message.key.remoteJid;
+  const u = message.key.participant || jid;
+  const user = obtenerUsuario(u) || {};
+  const plan = obtenerPlan(u);
+  const nombre = message.pushName || user.nombre || "Usuario";
+
+  const size = 20;
+  const total = Math.max(1, Math.ceil(megaCommands.length / size));
+  const page = Math.max(
+    1,
+    Math.min(total, parseInt(args[0] || "1", 10) || 1)
+  );
+
+  const groups = [
+    ["🧠 IA", ["/ia", "/iareset"]],
+    ["👥 GRUPOS", [
+      "/grupo", "/infogrupo", "/idgrupo", "/linkgrupo", "/revokelink",
+      "/adminsgrupo", "/miembrosgrupo", "/tagall", "/hidetag", "/tagadmins",
+      "/kickuser", "/adduser", "/promoteuser", "/demoteuser", "/mutechat",
+      "/unmutechat", "/cerrarchat", "/abrirchat", "/soloadmins", "/todoschat",
+      "/setgruponombre", "/setgrupodesc", "/reglasgrupo", "/setreglas",
+      "/setwelcome", "/getwelcome", "/setgoodbye", "/getgoodbye",
+      "/welcomeon", "/welcomeoff", "/goodbyeon", "/goodbyeoff",
+      "/antilinkon", "/antilinkoff", "/warnuser", "/unwarnuser",
+      "/warningsuser", "/clearwarnings", "/listwarnings", "/resetwarnings",
+      "/anuncio", "/adminsinfo", "/ownergrupo", "/creadorgrupo", "/tipochat",
+      "/horariogrupo", "/notasgrupo", "/comandosgrupo", "/seguridadgrupo",
+      "/configgrupo"
+    ]],
+    ["🛠️ UTILIDADES", [
+      "/ping", "/uptime", "/menu", "/menubtns", "/menunrml", "/alive",
+      "/botinfo", "/version", "/time", "/date", "/timezone", "/jid",
+      "/runtime", "/stats", "/health", "/memory", "/serverinfo"
+    ]],
+    ["🤖 SUBBOTS", [
+      "/subbot list", "/subbot create <nombre> <número>", "/subbot start <nombre>",
+      "/subbot stop <nombre>", "/subbot remove <nombre>",
+      "/subbot allow <nombre> <comando>", "/subbot deny <nombre> <comando>",
+      "/subbot commands <nombre>"
+    ]],
+    ["💎 PREMIUM", ["/plan", "/premium", "/beneficios", "/premiuminfo"]],
+    ["👑 OWNER", ["/addprem", "/delprem", "/autoadmin", "/restart"]]
+  ];
+
+  const base = groups
+    .map(([h, cs]) => h + "\n" + cs.map(x => "• " + x).join("\n"))
+    .join("\n\n");
+
+  const shown = megaCommands.slice((page - 1) * size, page * size);
+  const catalog =
+    "\n\n📚 *CATÁLOGO ONYX* · Página " +
+    page +
+    "/" +
+    total +
+    " · " +
+    megaCommands.length +
+    " comandos registrados\n" +
+    shown.map(x => "• /" + x).join("\n");
+
+  const menu =
+    "╔══════════════════════════════╗\n" +
+    "║        ☠️  ONYX-BOT  ☠️       ║\n" +
+    "╚══════════════════════════════╝\n\n" +
+    "☠️ *ONYX-BOT*\n" +
+    "🤖 Bot de WhatsApp · IA · Premium · Automatizado\n" +
+    "📦 *Comandos registrados:* " + megaCommands.length + "\n" +
+    "📖 Usa /menu 2, /menu 3, etc. para navegar el catálogo.\n\n" +
+    "👤 *USUARIO*\n" +
+    "• Nombre: " + nombre + "\n" +
+    "• Plan: " + String(plan).toUpperCase() + "\n\n" +
+    base +
+    catalog +
+    "\n\n━━━━━━━━━━━━━━━━━━━━\n" +
+    "👑 ı.ᴀᴍ.oɴʏxᴋıɴɢ👑";
+
+  try {
+    await conn.sendMessage(
+      jid,
+      { audio: { url: MENU_AUDIO }, mimetype: "audio/mpeg", ptt: false },
+      { quoted: message }
+    );
+  } catch (e) {
+    console.error("⚠️ Audio del menú no disponible:", e.message);
+  }
+
+  try {
+    await conn.sendMessage(
+      jid,
+      { video: { url: MENU_VIDEO }, mimetype: "video/mp4" },
+      { quoted: message }
+    );
+  } catch (e) {
+    console.error("⚠️ Video del menú no disponible:", e.message);
+  }
+
+  await conn.sendMessage(jid, { text: menu }, { quoted: message });
+}
+
+module.exports = { command: "menu", handler };
