@@ -1,0 +1,2 @@
+async function handler(conn,{message}){await conn.sendMessage(message.key.remoteJid,{text:"🛠️ Soporte de ONYX-BOT disponible mediante el contacto oficial del proyecto."},{quoted:message})}
+module.exports={command:"support",handler};
