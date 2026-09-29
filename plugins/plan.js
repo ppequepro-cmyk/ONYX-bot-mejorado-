@@ -1,0 +1,1 @@
+const{obtenerPlan}=require("../sistemas/premium");async function handler(conn,{message}){const j=message.key.participant||message.key.remoteJid;await conn.sendMessage(message.key.remoteJid,{text:"💎 ONYX\nPlan actual: "+obtenerPlan(j).toUpperCase()})}module.exports={command:"plan",handler};
