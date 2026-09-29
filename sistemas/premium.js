@@ -1,13 +1,20 @@
 const { obtenerUsuario, guardarUsuario } = require("../usuarios");
 
 let OWNER_JID = null;
+let OWNER_LID = null;
 
-function establecerOwner(jid) {
-    OWNER_JID = jid;
+function normalizarJid(jid) {
+    return String(jid || "").split(":")[0].trim().toLowerCase();
+}
+
+function establecerOwner(jid, lid = null) {
+    OWNER_JID = normalizarJid(jid);
+    OWNER_LID = normalizarJid(lid);
 }
 
 function esOwner(jid) {
-    return jid === OWNER_JID;
+    const actual = normalizarJid(jid);
+    return !!actual && (actual === OWNER_JID || actual === OWNER_LID);
 }
 
 
