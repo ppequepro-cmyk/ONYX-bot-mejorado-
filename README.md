@@ -53,13 +53,7 @@
 
 ## ◈ INSTALACIÓN
 
-```bash
-git clone https://github.com/ppequepro-cmyk/ONYX-bot-mejorado-.git
-cd ONYX-bot-mejorado-
-npm install
-```
-
-Configura las variables privadas en `.env` y nunca publiques tokens, claves o sesiones.
+El proyecto está preparado para ejecutarse en un entorno Node.js compatible. Configura las variables privadas en `.env` y nunca publiques tokens, claves o sesiones.
 
 ## ◈ EJECUCIÓN
 
@@ -116,7 +110,7 @@ El menú principal está organizado por categorías y el catálogo se divide en 
 /menu 5
 ```
 
-El catálogo central contiene **100 comandos registrados**. Algunos son utilidades base y otros son módulos preparados para futuras implementaciones. El catálogo no significa que cada entrada tenga todavía una integración externa completa.
+El catálogo central contiene **112 comandos registrados y habilitados por el cargador de plugins**. Los comandos que dependen de permisos de grupo, datos externos, multimedia o servicios de terceros deben probarse en su entorno correspondiente.
 
 ## ◈ COMANDOS PRINCIPALES
 
@@ -176,6 +170,16 @@ ONYX-bot-mejorado-/
 ├── usuarios/          # local, no subir a Git
 └── database.json      # local, no subir a Git
 ```
+
+## ◈ PRUEBA DE LOS 112 COMANDOS
+
+La prueba se realiza directamente desde WhatsApp. Ejecuta [0m`/menu 1` hasta `/menu 6` para comprobar que las 112 entradas aparecen en el catálogo.
+
+### Lista de comandos habilitados
+
+```text
+/alive /botinfo /version /ownerinfo /jid /runtime /time /date /timezone /prefix /commands /support /status /stats /groupid /groupname /groupdesc /members /admins /creator /contact /profile /mention /echo /say /reverse /upper /lower /length /count /calc /sum /subtract /multiply /divide /random /choose /coin /dice /eightball /fact /quote /help /rules /grouplink /groupinfo /setname /setdesc /tagall2 /hidetag2 /adminslist /listonline /welcome2 /goodbye2 /antilink2 /warn2 /warnings2 /kick2 /promote2 /demote2 /add2 /mute2 /unmute2 /lock2 /unlock2 /open2 /close2 /invite2 /revoke2 /leave2 /announce2 /everyone2 /poll2 /translate2 /define /wiki /weather /shortlink /qr /stickerinfo /mediainfo /filename /base64 /timestamp /unix /hex /binary /octal /password /uuid /hash /json /encode /decode /backup /reload2 /ping2 /uptime2 /menu2 /premiuminfo /report /feedback /bug /suggest /donate /catalog /features /health /serverinfo /memory /process /license\n```\n
+Los comandos sensibles o destructivos conservan sus restricciones de permisos. La presencia en el catálogo significa que están registrados; no significa que una acción administrativa pueda ejecutarse sin autorización.
 
 ## ◈ DESARROLLO
 
