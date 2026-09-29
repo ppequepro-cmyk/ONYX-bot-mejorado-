@@ -17,15 +17,16 @@ function loadPlugins(){plugins={};for(const file of fs.readdirSync(pathPlugins))
 fs.watch(pathPlugins,{recursive:true},(eventType,filename)=>{if(filename?.endsWith(".js"))loadPlugins()});loadPlugins();
 async function logEvent(conn,m,type,user="Desconocido",groupName=""){console.log(chalk.bold.cyan("━━━━━━━━━━ ONYX LOGS ━━━━━━━━━━")+"\n"+chalk.blue("│⏰ ")+chalk.green(new Date().toLocaleString("es-MX",{timeZone:"America/Mexico_City"}))+"\n"+chalk.cyan("│📑 ")+chalk.white(type)+(m.key.remoteJid?.endsWith("@g.us")?"\n"+chalk.green("│👥 ")+chalk.white(groupName)+" ➜ "+m.key.remoteJid:"\n"+chalk.magenta("│💌 ")+chalk.white(user)))}
 async function handleMessage(conn,message){const msg=message.message,key=message.key,from=key.remoteJid;if(!from||!msg)return;const group=from.endsWith("@g.us"),user=key.participant||from;let groupName="";if(group){try{groupName=(await conn.groupMetadata(from)).subject}catch{}}const body=msg.conversation||msg.extendedTextMessage?.text||msg.imageMessage?.caption||msg.videoMessage?.caption||null;
-if(group){
+if(group&&!key.fromMe){
     try{
+        const normalizeId=(x)=>String(x||"").split(":")[0].split("@")[0].toLowerCase();
         const context=msg.extendedTextMessage?.contextInfo||msg.imageMessage?.contextInfo||msg.videoMessage?.contextInfo||{};
         const mentioned=context.mentionedJid||[];
-        const botIds=[conn.user?.id,conn.user?.lid].filter(Boolean).map(x=>String(x).split(":")[0].toLowerCase());
-        const isBotMentioned=mentioned.some(j=>botIds.includes(String(j).split(":")[0].toLowerCase()));
+        const botIds=[conn.user?.id,conn.user?.lid].filter(Boolean).map(normalizeId);
+        const isBotMentioned=mentioned.some(j=>botIds.includes(normalizeId(j)));
         if(isBotMentioned){
             const sender=user;
-            const senderTag="@"+String(sender).split("@")[0].split(":")[0];
+            const senderTag="@"+normalizeId(sender);
             await conn.sendMessage(from,{text:"🔔 *¡ONYX-BOT fue mencionado!*\\n\\n👤 "+senderTag+" me ha etiquetado en el grupo.\\n💬 *"+String(body||"").replace(/\\*/g,"")+"*\\n\\n🖤 *Aquí estoy, atento a tu mensaje.*\\n⚡ *Mención detectada correctamente.*",mentions:[sender]});
         }
     }catch(e){console.error("Error en notificación de mención:",e.message)}
