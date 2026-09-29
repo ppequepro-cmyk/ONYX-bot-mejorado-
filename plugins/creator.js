@@ -1,0 +1,2 @@
+async function handler(conn,{message,args}){const jid=message.key.remoteJid;const t=args.join(" ").trim();await conn.sendMessage(jid,{text:"👑 Owner: ı.ᴀᴍ.oɴʏxᴋıɴɢ👑"+(t?"\n\n"+t:"")},{quoted:message})}
+module.exports={command:"creator",handler};
