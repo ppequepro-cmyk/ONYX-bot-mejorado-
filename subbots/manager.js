@@ -67,7 +67,7 @@ async function requestCode(phone,onMessage){
     const x=read();delete x.bots[id];write(x);
     throw lastError||Error("No se pudo obtener el código de emparejamiento.");
   }
-  bot.pairingCode=String(code).replace(/[^0-9-]/g,"");bot.status="pairing";bot.pairingUpdatedAt=new Date().toISOString();write(read());
+  bot.pairingCode=String(code).replace(/[^0-9]/g,"");bot.status="pairing";bot.pairingUpdatedAt=new Date().toISOString();write(read());
   console.log("📲 Pairing code generado para",clean,":",bot.pairingCode);
   return bot;
 }
@@ -76,7 +76,7 @@ async function create(name,phone,onMessage){
   const d=read();if(d.bots[id])throw Error("Ese subbot ya existe");const dir=path.join(ROOT,id,"sessions");fs.mkdirSync(dir,{recursive:true});
   const{state,saveCreds}=await useMultiFileAuthState(dir);const{version}=await fetchLatestBaileysVersion();const sock=makeWASocket(socketOptions(state,version));const bot={id,name:id,phone:clean,status:"pairing",createdAt:new Date().toISOString()};d.bots[id]=bot;write(d);bind(id,sock,saveCreds,onMessage);console.log("🤖 Creando subbot:",id,"con número",clean);
   if(state.creds.registered){bot.status="online";write(read());return bot}
-  try{let code=null,lastError=null;for(let attempt=1;attempt<=3&&!code;attempt++){try{await delay(attempt===1?2500:2000);code=await Promise.race([sock.requestPairingCode(clean),new Promise((_,reject)=>setTimeout(()=>reject(Error("timeout al solicitar pairing code")),15000))])}catch(err){lastError=err;console.error("⚠️ Intento "+attempt+" de pairing para "+id+":",err.message);if(attempt<3)await delay(2500)}}if(!code)throw lastError||Error("No se pudo obtener el código de emparejamiento");bot.pairingCode=String(code);bot.status="pairing";bot.pairingUpdatedAt=new Date().toISOString();write(read());console.log("📲 Pairing code generado para",id,":",code);return bot}catch(e){console.error("❌ Error creando subbot "+id+":",e.message);try{sock.end(undefined)}catch{}sockets.delete(id);const x=read();delete x.bots[id];write(x);throw e}
+  try{let code=null,lastError=null;for(let attempt=1;attempt<=3&&!code;attempt++){try{await delay(attempt===1?2500:2000);code=await Promise.race([sock.requestPairingCode(clean),new Promise((_,reject)=>setTimeout(()=>reject(Error("timeout al solicitar pairing code")),15000))])}catch(err){lastError=err;console.error("⚠️ Intento "+attempt+" de pairing para "+id+":",err.message);if(attempt<3)await delay(2500)}}if(!code)throw lastError||Error("No se pudo obtener el código de emparejamiento");bot.pairingCode=String(code).replace(/[^0-9]/g,"");bot.status="pairing";bot.pairingUpdatedAt=new Date().toISOString();write(read());console.log("📲 Pairing code generado para",id,":",code);return bot}catch(e){console.error("❌ Error creando subbot "+id+":",e.message);try{sock.end(undefined)}catch{}sockets.delete(id);const x=read();delete x.bots[id];write(x);throw e}
 }
 async function stop(id){const sock=sockets.get(id);if(sock){try{sock.end(undefined)}catch{}sockets.delete(id)}const d=read();if(d.bots[id]){d.bots[id].status="offline";write(d)}reconnecting.delete(id)}
 async function remove(id){await stop(id);const d=read();if(!d.bots[id])return false;delete d.bots[id];write(d);return true}
