@@ -95,6 +95,43 @@ async function buscarImagenes(query) {
     .filter(Boolean);
 }
 
+async function mejorarImagen(buffer) {
+  const fs = require("fs");
+  const os = require("os");
+  const path = require("path");
+  const { spawn } = require("child_process");
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "onyx-enhance-"));
+  const input = path.join(dir, "input.jpg");
+  const output = path.join(dir, "output.jpg");
+
+  try {
+    fs.writeFileSync(input, buffer);
+
+    await new Promise((resolve, reject) => {
+      const p = spawn("ffmpeg", [
+        "-y",
+        "-i", input,
+        "-vf", "scale=iw*2:ih*2:flags=lanczos,unsharp=5:5:0.7:5:5:0,eq=contrast=1.04:saturation=1.05",
+        "-q:v", "2",
+        output
+      ]);
+
+      let err = "";
+      p.stderr.on("data", d => err += d.toString());
+      p.on("error", reject);
+      p.on("close", code => {
+        if (code === 0) resolve();
+        else reject(new Error(err.slice(-1200)));
+      });
+    });
+
+    return fs.readFileSync(output);
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+  }
+}
+
 async function preguntarONYX(texto, historial = []) {
   const historialTexto = historial
     .slice(-10)
@@ -120,4 +157,4 @@ async function preguntarONYX(texto, historial = []) {
   return null;
 }
 
-module.exports = { preguntarONYX, analizarImagen, buscarImagenes };
+module.exports = { preguntarONYX, analizarImagen, buscarImagenes, mejorarImagen };
