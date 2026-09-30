@@ -15,20 +15,22 @@ function establecerOwner(jid, lid = null) {
 
 function esOwner(jid) {
     const valores = Array.isArray(jid) ? jid : [jid];
+
     return valores.some(v => {
         const actual = normalizarJid(v);
-        return !!actual && (actual === OWNER_JID || actual === OWNER_LID || OWNER_NUMBERS.has(actual));
+        return !!actual && (
+            actual === OWNER_JID ||
+            actual === OWNER_LID ||
+            OWNER_NUMBERS.has(actual)
+        );
     });
 }
-
 
 function esPremium(jid) {
     if (esOwner(jid)) return true;
 
     const usuario = obtenerUsuario(jid);
-
     if (!usuario) return false;
-
     if (usuario.premium !== true) return false;
 
     if (usuario.fechaPremium) {
@@ -52,7 +54,6 @@ function obtenerPlan(jid) {
 
 function activarPremium(jid, dias = 30) {
     const usuario = obtenerUsuario(jid);
-
     if (!usuario) return false;
 
     const fecha = new Date();
@@ -63,13 +64,17 @@ function activarPremium(jid, dias = 30) {
     usuario.fechaPremium = fecha.toISOString();
 
     guardarUsuario(usuario);
-
     return usuario;
 }
 
-function obtenerOwnersNotificacion() {\n    return [...OWNER_NUMBERS].filter(jid => jid.endsWith("@s.whatsapp.net"));\n}\n\nfunction quitarPremium(jid) {
-    const usuario = obtenerUsuario(jid);
+function obtenerOwnersNotificacion() {
+    return [...OWNER_NUMBERS].filter(jid =>
+        jid.endsWith("@s.whatsapp.net")
+    );
+}
 
+function quitarPremium(jid) {
+    const usuario = obtenerUsuario(jid);
     if (!usuario) return false;
 
     usuario.premium = false;
@@ -77,15 +82,15 @@ function obtenerOwnersNotificacion() {\n    return [...OWNER_NUMBERS].filter(jid
     usuario.fechaPremium = null;
 
     guardarUsuario(usuario);
-
     return usuario;
 }
 
-    module.exports = {
+module.exports = {
     establecerOwner,
     esOwner,
     esPremium,
     obtenerPlan,
     activarPremium,
-    quitarPremium
+    quitarPremium,
+    obtenerOwnersNotificacion
 };
