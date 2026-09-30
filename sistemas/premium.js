@@ -67,7 +67,7 @@ function activarPremium(jid, dias = 30) {
     return usuario;
 }
 
-function quitarPremium(jid) {
+function obtenerOwnersNotificacion() {\n    return [...OWNER_NUMBERS].filter(jid => jid.endsWith("@s.whatsapp.net"));\n}\n\nfunction quitarPremium(jid) {
     const usuario = obtenerUsuario(jid);
 
     if (!usuario) return false;
