@@ -45,6 +45,56 @@ async function preguntarGroq(texto, historialTexto) {
   return response.data?.choices?.[0]?.message?.content || null;
 }
 
+async function analizarImagen(buffer, mimeType="image/jpeg", instruccion="Analiza esta imagen y responde de forma natural.") {
+  if (!process.env.GROQ_API_KEY) return null;
+  const response = await axios.post(
+    process.env.GROQ_API_URL || "https://api.groq.com/openai/v1/chat/completions",
+    {
+      model: process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b",
+      messages: [{
+        role: "system",
+        content: SYSTEM_PROMPT + "\nPuedes analizar imágenes. No inventes detalles que no puedas ver."
+      }, {
+        role: "user",
+        content: [
+          { type: "text", text: instruccion },
+          { type: "image_url", image_url: { url: "data:" + mimeType + ";base64," + buffer.toString("base64") } }
+        ]
+      }],
+      max_completion_tokens: 900
+    },
+    {
+      headers: {
+        Authorization: "Bearer " + process.env.GROQ_API_KEY,
+        "Content-Type": "application/json"
+      },
+      timeout: 30000
+    }
+  );
+  return response.data?.choices?.[0]?.message?.content || null;
+}
+
+async function buscarImagenes(query) {
+  const response = await axios.get("https://commons.wikimedia.org/w/api.php", {
+    params: {
+      action: "query",
+      generator: "search",
+      gsrsearch: query,
+      gsrnamespace: 6,
+      gsrlimit: 3,
+      prop: "imageinfo",
+      iiprop: "url",
+      iiurlwidth: 900,
+      format: "json",
+      origin: "*"
+    },
+    timeout: 15000
+  });
+  return Object.values(response.data?.query?.pages || {})
+    .map(p => p.imageinfo?.[0]?.url)
+    .filter(Boolean);
+}
+
 async function preguntarONYX(texto, historial = []) {
   const historialTexto = historial
     .slice(-10)
@@ -70,4 +120,4 @@ async function preguntarONYX(texto, historial = []) {
   return null;
 }
 
-module.exports = { preguntarONYX };
+module.exports = { preguntarONYX, analizarImagen, buscarImagenes };
