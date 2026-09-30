@@ -30,7 +30,7 @@ function bind(id,sock,saveCreds,onMessage){
 }
 async function requestCode(phone,onMessage){
   ensure();
-  const clean=String(phone||"").replace(/\\D/g,"");
+  const clean=String(phone||"").replace(/\D/g,"");
   if(clean.length<8||clean.length>15)throw Error("Número inválido. Usa el número completo con código de país.");
   const id=safe("subbot_"+clean);
   const d=read();
