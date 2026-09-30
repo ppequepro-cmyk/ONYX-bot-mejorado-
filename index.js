@@ -11,12 +11,6 @@ const { establecerOwner } = require("./sistemas/premium");
 const { list:startSubbots, startExisting:startExistingSubbot } = require("./subbots/manager");
 
 const SESSION_DIR = path.join(__dirname, "sessions");
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
 
 let reconnectTimer = null;
 let starting = false;
@@ -51,23 +45,11 @@ async function startBot() {
         const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
         const { version } = await fetchLatestBaileysVersion();
 
-        let opcion = null;
         const hasCreds = fs.existsSync(path.join(SESSION_DIR, "creds.json"));
 
         if (!hasCreds) {
-            console.log(chalk.yellowBright("\n📱 Sesión nueva de ONYX."));
-            console.log(chalk.cyan("1. Escanea el QR desde WhatsApp."));
-            console.log(chalk.cyan("2. Si prefieres código de vinculación, usa la opción 2.\n"));
-
-            do {
-                opcion = await question(
-                    chalk.bold.yellow("➜ Selecciona 1 para QR o 2 para código de vinculación: ")
-                );
-
-                if (opcion !== "1" && opcion !== "2") {
-                    console.log(chalk.red("❌ Escribe solamente 1 o 2."));
-                }
-            } while (opcion !== "1" && opcion !== "2");
+            console.log(chalk.yellowBright("\n📱 SESIÓN NUEVA: ONYX iniciará directamente con QR."));
+            console.log(chalk.cyan("📲 Esperando QR de WhatsApp...\n"));
         }
 
         const socket = makeWASocket({
@@ -78,24 +60,6 @@ async function startBot() {
             syncFullHistory: false,
             generateHighQualityLinkPreview: false
         });
-        if (opcion === "2") {
-            try {
-                let phoneNumber = await question("Introduce el número con código de país (ej. 521XXXXXXXXXX): ");
-                phoneNumber = phoneNumber.replace(/\D/g, "");
-
-                if (!phoneNumber) {
-                    throw new Error("Número de teléfono vacío.");
-                }
-
-                console.log(chalk.yellow("⏳ Solicitando código de vinculación..."));
-                const pairingCode = await socket.requestPairingCode(phoneNumber);
-                console.log(chalk.greenBright("\n🔐 CÓDIGO DE VINCULACIÓN: " + pairingCode));
-                console.log(chalk.cyan("En WhatsApp abre Dispositivos vinculados → Vincular con número de teléfono.\n"));
-            } catch (err) {
-                console.error(chalk.red("❌ No se pudo generar el código:"), err.message);
-            }
-        }
-
         socket.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect, qr } = update;
 
@@ -158,9 +122,9 @@ async function startBot() {
             }
 
             if (qr) {
-                console.log(chalk.greenBright("\n📲 ESCANEA ESTE QR CON WHATSAPP:\n"));
+                console.log(chalk.greenBright("\n📲 QR RECIBIDO. ESCANÉALO EN WHATSAPP:\n"));
                 qrcode.generate(qr, { small: true });
-                console.log(chalk.cyan("\nWhatsApp → Dispositivos vinculados → Vincular dispositivo"));
+                console.log(chalk.cyan("\nWhatsApp → Dispositivos vinculados → Vincular dispositivo\n"));
             }
         });
 
