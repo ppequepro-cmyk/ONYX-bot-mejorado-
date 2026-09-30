@@ -17,12 +17,6 @@ let reconnectTimer = null;
 let starting = false;
 let connected = false;
 
-function scheduleReconnect() {
-    if (reconnectTimer || starting) return;
-
-    reconnectTimer = setTimeout(() => {
-        reconnectTimer = null;
-        
 // API privada para que ONYX WEB/ONYX API gestione sesiones Premium.
 // No expone esta API públicamente sin un token.
 const controlApp = express();
@@ -50,6 +44,12 @@ controlApp.delete("/api/premium/bots/:id",async(req,res)=>{try{const ok=await re
 const CONTROL_PORT=Number(process.env.ONYX_BOT_CONTROL_PORT||3010);
 controlApp.listen(CONTROL_PORT,"0.0.0.0",()=>console.log("🔐 ONYX control API en puerto "+CONTROL_PORT));
 
+function scheduleReconnect() {
+    if (reconnectTimer || starting) return;
+
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        
 startBot().catch(err => {
             console.error("Error iniciando ONYX:", err.message);
             scheduleReconnect();
