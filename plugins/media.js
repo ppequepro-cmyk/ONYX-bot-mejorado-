@@ -20,7 +20,7 @@ async function download(dir,source,isAudio){
  const common=["--no-playlist","--restrict-filenames","--no-warnings","--newline","--socket-timeout","30","--retries","5","--fragment-retries","5","--extractor-retries","3","--force-ipv4","-o",output];
  const attempts=isAudio?[
   [...common,"-f","bestaudio/best","-x","--audio-format","mp3","--audio-quality","5",source],
-  [...common,"-f","ba/b","--audio-format","mp3","source"===source?"":source].filter(Boolean)
+  [...common,"-f","ba/b","--audio-format","mp3",source]
  ]:[
   [...common,"-f","bv*[height<=720]+ba/b[height<=720]/b","--merge-output-format","mp4",source],
   [...common,"-f","b[height<=720][ext=mp4]/b[height<=720]/b",source]
