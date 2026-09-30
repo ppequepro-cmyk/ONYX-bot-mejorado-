@@ -12,7 +12,7 @@ function isCommandAllowed(id,command){const b=read().bots[id];if(!b)return false
 function setAllowedCommands(id,commands){const d=read();if(!d.bots[id])return false;d.bots[id].allowedCommands=[...new Set(commands.map(x=>String(x).toLowerCase().replace(/^\//,"")).filter(Boolean))];write(d);return true}
 function getCommandPolicy(id){return read().bots[id]?.allowedCommands||null}
 function list(){return Object.values(read().bots)}
-function socketOptions(state,version){return{version,auth:state,logger:pino({level:"silent"}),browser:["ONYX-BOT","Chrome","1.0.0"],markOnlineOnConnect:false,syncFullHistory:false,generateHighQualityLinkPreview:false}}
+function socketOptions(state,version){return{version,auth:state,logger:pino({level:"silent"}),browser:["ONYX-BOT","Chrome","1.0.0"],markOnlineOnConnect:true,syncFullHistory:false,generateHighQualityLinkPreview:false}}
 function bind(id,sock,saveCreds,onMessage){
   sockets.set(id,sock);sock.ev.on("creds.update",saveCreds);
   sock.ev.on("connection.update",async u=>{
@@ -25,6 +25,26 @@ function bind(id,sock,saveCreds,onMessage){
     }
   });
   sock.ev.on("messages.upsert",async m=>{try{for(const msg of m.messages||[]){if(msg&&onMessage)await onMessage(id,sock,msg)}}catch(e){console.error("Subbot "+id+":",e.message)}})
+}
+async function waitForPairingReady(sock,state,timeout=15000){
+  if(state.creds.registered)return;
+  await new Promise((resolve,reject)=>{
+    let done=false;
+    const finish=(err)=>{
+      if(done)return;
+      done=true;
+      clearTimeout(timer);
+      sock.ev.off("connection.update",onUpdate);
+      err?reject(err):resolve();
+    };
+    const timer=setTimeout(()=>finish(Error("WhatsApp no preparó la conexión para pairing code a tiempo.")),timeout);
+    const onUpdate=u=>{
+      if(u.qr)finish();
+      else if(u.connection==="open"&&state.creds.registered)finish();
+      else if(u.connection==="close"&&!state.creds.registered)finish(u.lastDisconnect?.error||Error("WhatsApp cerró la conexión antes de generar el código."));
+    };
+    sock.ev.on("connection.update",onUpdate);
+  });
 }
 function normalizePairingCode(value){
   return String(value||"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();
@@ -41,7 +61,16 @@ async function requestCode(phone,onMessage){
   if(d.bots[id]){
     const old=d.bots[id];
     if(old.status==="online")throw Error("Ya existe un subbot conectado para ese número.");
-    throw Error("Ya existe un registro para ese número. Usa /subbot start "+id+" o elimina el registro antes de volver a vincularlo.");
+    const oldDir=path.join(ROOT,id,"sessions");
+    const oldCreds=path.join(oldDir,"creds.json");
+    let registered=false;
+    try{registered=JSON.parse(fs.readFileSync(oldCreds,"utf8")).registered===true}catch{}
+    if(registered)throw Error("Ya existe una sesión vinculada para ese número. Usa /subbot start "+id+".");
+    try{sockets.get(id)?.end(undefined)}catch{}
+    sockets.delete(id);
+    try{fs.rmSync(path.join(ROOT,id),{recursive:true,force:true})}catch{}
+    delete d.bots[id];
+    write(d);
   }
   const dir=path.join(ROOT,id,"sessions");fs.mkdirSync(dir,{recursive:true});
   const{state,saveCreds}=await useMultiFileAuthState(dir);const{version}=await fetchLatestBaileysVersion();
@@ -51,7 +80,7 @@ async function requestCode(phone,onMessage){
   let code=null,lastError=null;
   for(let attempt=1;attempt<=3&&!code;attempt++){
     try{
-      await delay(attempt===1?2500:2000);
+      await waitForPairingReady(sock,state,15000);
       if(state.creds.registered){bot.status="online";write(read());return bot}
       const received=await Promise.race([sock.requestPairingCode(clean),new Promise((_,reject)=>setTimeout(()=>reject(Error("timeout al solicitar pairing code")),15000))]);
       const normalized=normalizePairingCode(received);
@@ -76,7 +105,7 @@ async function create(name,phone,onMessage){
   if(state.creds.registered){bot.status="online";write(read());return bot}
   try{
     let code=null,lastError=null;
-    for(let attempt=1;attempt<=3&&!code;attempt++){try{await delay(attempt===1?2500:2000);const received=await Promise.race([sock.requestPairingCode(clean),new Promise((_,reject)=>setTimeout(()=>reject(Error("timeout al solicitar pairing code")),15000))]);const normalized=normalizePairingCode(received);if(!validPairingCode(normalized))throw Error("WhatsApp devolvió un código de emparejamiento incompleto.");code=normalized}catch(err){lastError=err;console.error("⚠️ Intento "+attempt+" de pairing para "+id+":",err.message);if(attempt<3)await delay(2500)}}
+    for(let attempt=1;attempt<=3&&!code;attempt++){try{await waitForPairingReady(sock,state,15000);const received=await Promise.race([sock.requestPairingCode(clean),new Promise((_,reject)=>setTimeout(()=>reject(Error("timeout al solicitar pairing code")),15000))]);const normalized=normalizePairingCode(received);if(!validPairingCode(normalized))throw Error("WhatsApp devolvió un código de emparejamiento incompleto.");code=normalized}catch(err){lastError=err;console.error("⚠️ Intento "+attempt+" de pairing para "+id+":",err.message);if(attempt<3)await delay(2500)}}
     if(!code)throw lastError||Error("No se pudo obtener el código de emparejamiento");
     bot.pairingCode=code;bot.status="pairing";bot.pairingUpdatedAt=new Date().toISOString();write(read());console.log("📲 Pairing code generado para",id,":",code);return bot
   }catch(e){console.error("❌ Error creando subbot "+id+":",e.message);try{sock.end(undefined)}catch{}sockets.delete(id);const x=read();delete x.bots[id];write(x);throw e}
