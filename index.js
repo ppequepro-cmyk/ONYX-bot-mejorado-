@@ -60,6 +60,16 @@ async function startBot() {
             syncFullHistory: false,
             generateHighQualityLinkPreview: false
         });
+        const originalSendMessage = socket.sendMessage.bind(socket);
+        socket.sendMessage = async (...args) => {
+            const sent = await originalSendMessage(...args);
+            try {
+                const main = require('./main.js');
+                main.marcarMensajeBot(sent?.key);
+            } catch {}
+            return sent;
+        };
+
         socket.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect, qr } = update;
 
