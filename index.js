@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
+const express = require("express");
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -8,7 +9,7 @@ const pino = require('pino');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const { establecerOwner, obtenerOwnersNotificacion } = require("./sistemas/premium");
-const { list:startSubbots, startExisting:startExistingSubbot } = require("./subbots/manager");
+const { list:startSubbots, startExisting:startExistingSubbot, requestCode:startPremiumPair, stop:stopSubbot, remove:removeSubbot } = require("./subbots/manager");
 
 const SESSION_DIR = path.join(__dirname, "sessions");
 
@@ -21,7 +22,35 @@ function scheduleReconnect() {
 
     reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
-        startBot().catch(err => {
+        
+// API privada para que ONYX WEB/ONYX API gestione sesiones Premium.
+// No expone esta API públicamente sin un token.
+const controlApp = express();
+controlApp.use(express.json({limit:"32kb"}));
+controlApp.use((req,res,next)=>{
+    const configured=process.env.ONYX_BOT_TOKEN;
+    const auth=String(req.get("authorization")||"");
+    if(!configured || auth !== "Bearer "+configured) return res.status(401).json({ok:false,error:"No autorizado"});
+    next();
+});
+controlApp.get("/api/premium/bots",(_req,res)=>res.json({ok:true,bots:startSubbots()}));
+controlApp.post("/api/premium/pair",async(req,res)=>{
+    try{
+        const phone=String(req.body?.phone||"").replace(/\D/g,"");
+        if(!phone) return res.status(400).json({ok:false,error:"phone es obligatorio"});
+        const bot=await startPremiumPair(phone,async(id,sock,msg)=>{
+            try{const main=require("./main.js");await main.handleMessage(sock,msg)}
+            catch(e){console.error("Premium "+id+":",e.message)}
+        });
+        res.json({ok:true,bot});
+    }catch(e){res.status(400).json({ok:false,error:e.message||"No se pudo generar el pairing"})}
+});
+controlApp.post("/api/premium/bots/:id/stop",async(req,res)=>{try{await stopSubbot(req.params.id);res.json({ok:true})}catch(e){res.status(400).json({ok:false,error:e.message})}});
+controlApp.delete("/api/premium/bots/:id",async(req,res)=>{try{const ok=await removeSubbot(req.params.id);res.json({ok})}catch(e){res.status(400).json({ok:false,error:e.message})}});
+const CONTROL_PORT=Number(process.env.ONYX_BOT_CONTROL_PORT||3010);
+controlApp.listen(CONTROL_PORT,"0.0.0.0",()=>console.log("🔐 ONYX control API en puerto "+CONTROL_PORT));
+
+startBot().catch(err => {
             console.error("Error iniciando ONYX:", err.message);
             scheduleReconnect();
         });
