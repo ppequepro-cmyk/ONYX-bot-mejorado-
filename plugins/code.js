@@ -5,7 +5,13 @@ function limpiarNumero(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
-function formatearCodigo(value) {\n  const raw = String(value || "").replace(/[^0-9]/g, "");\n  if (raw.length === 6) return raw.slice(0, 3) + "-" + raw.slice(3);\n  return String(value || "");\n}\n\nfunction numeroDesdeJid(value) {
+function formatearCodigo(value) {
+  const raw = String(value || "").replace(/[^A-Za-z0-9]/g, "");
+  if (raw.length === 6) return raw.slice(0, 3) + "-" + raw.slice(3);
+  return String(value || "");
+}
+
+function numeroDesdeJid(value) {
   const raw = String(value || "").split(":")[0];
   if (!raw.endsWith("@s.whatsapp.net")) return "";
   return limpiarNumero(raw.split("@")[0]);
@@ -28,13 +34,13 @@ module.exports = {
       }, { quoted: message });
     }
 
-    // Forma recomendada: /code 521234567890
-    // Así el owner puede vincular cualquier número sin depender de desde qué chat envió el comando.
     let phone = limpiarNumero(args?.[0]);
 
-    // Compatibilidad: si no se indicó número, intenta usar el remitente del chat privado.
     if (!phone && !jid.endsWith("@g.us")) {
-      phone = numeroDesdeJid(jid) || numeroDesdeJid(message.key.participant) || numeroDesdeJid(message.key.remoteJidAlt);
+      phone =
+        numeroDesdeJid(jid) ||
+        numeroDesdeJid(message.key.participant) ||
+        numeroDesdeJid(message.key.remoteJidAlt);
     }
 
     if (!phone || phone.length < 8 || phone.length > 15) {
@@ -61,7 +67,7 @@ module.exports = {
         text:
           "📲 *CÓDIGO DE SUBBOT*\n\n" +
           "🔢 Número: +" + phone + "\n" +
-          "🔐 Código: *" + bot.pairingCode + "*\n\n" +
+          "🔐 Código: *" + formatearCodigo(bot.pairingCode) + "*\n\n" +
           "En ese número abre:\n" +
           "WhatsApp → Dispositivos vinculados → Vincular dispositivo → Vincular con número de teléfono.\n\n" +
           "⚠️ El código es temporal. Úsalo inmediatamente."
