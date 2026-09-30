@@ -93,9 +93,11 @@ async function handleMessage(conn, message) {
     }
   }
 
-  if (!body) return;
+  const imageMessage = msg.imageMessage || msg.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage || null;
 
-  const textBody = String(body).trim();
+  if (!body && !imageMessage) return;
+
+  const textBody = String(body || "").trim();
 
   if (!textBody.startsWith(prefix)) {
     if (!group) {
@@ -108,7 +110,47 @@ async function handleMessage(conn, message) {
           (!ownerActivity.has(from) ||
             Date.now() - ownerActivity.get(from) > OWNER_ACTIVE_MS)
         ) {
-          const { preguntarONYX } = require("./ia/ia");
+          const { preguntarONYX, analizarImagen, buscarImagenes } = require("./ia/ia");
+
+          if (imageMessage) {
+            const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
+            const chunks = [];
+            const stream = await downloadContentFromMessage(imageMessage, "image");
+            for await (const chunk of stream) chunks.push(chunk);
+            const imageBuffer = Buffer.concat(chunks);
+
+            const instruccion = textBody || "Analiza esta imagen y dime qué ves.";
+            const respuestaImagen = await analizarImagen(
+              imageBuffer,
+              imageMessage.mimetype || "image/jpeg",
+              instruccion
+            );
+
+            if (respuestaImagen) {
+              const sent = await conn.sendMessage(from, {
+                text: "🧠 *ONYX,IA VISION*\n\n" + respuestaImagen,
+                quoted: message
+              });
+              if (sent?.key?.id) botMessageIds.add(sent.key.id);
+            }
+            return;
+          }
+
+          const searchMatch = textBody.match(/^(?:busca|buscar|búscame|buscame|encuentra|mu[eé]strame)\s+(?:una\s+)?(?:imagen|foto|fotos|imágenes|imagenes)\s+(?:de\s+)?(.+)$/i);
+          if (searchMatch) {
+            const resultados = await buscarImagenes(searchMatch[1]);
+            if (!resultados.length) {
+              await conn.sendMessage(from, { text: "🔎 No encontré imágenes para esa búsqueda.", quoted: message });
+              return;
+            }
+            for (const url of resultados) {
+              await conn.sendMessage(from, {
+                image: { url },
+                caption: "🖼️ *ONYX,IA*\nBúsqueda: " + searchMatch[1]
+              }, { quoted: message });
+            }
+            return;
+          }
           const dir = "./memoria";
 
           if (!fs.existsSync(dir)) {
