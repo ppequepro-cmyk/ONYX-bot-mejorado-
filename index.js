@@ -138,6 +138,38 @@ async function startBot() {
             }
         });
 
+        const { isAntiCall } = require("./sistemas/anticall");
+        const llamadasProcesadas = new Set();
+
+        socket.ev.on("call", async (calls) => {
+            if (!isAntiCall()) return;
+            const lista = Array.isArray(calls) ? calls : [calls];
+
+            for (const call of lista) {
+                try {
+                    if (!call || call.status !== "offer" || !call.id || !call.from) continue;
+                    if (llamadasProcesadas.has(call.id)) continue;
+                    llamadasProcesadas.add(call.id);
+
+                    console.log("📵 AntiCall: llamada rechazada de", call.from);
+
+                    if (typeof socket.rejectCall === "function") {
+                        await socket.rejectCall(call.id, call.from);
+                    }
+
+                    try {
+                        await socket.sendMessage(call.from, {
+                            text: "📵 No puedo atender llamadas. Usa un mensaje de WhatsApp para contactar con ONYX."
+                        });
+                    } catch {}
+
+                    setTimeout(() => llamadasProcesadas.delete(call.id), 60000);
+                } catch (err) {
+                    console.error("❌ AntiCall:", err?.stack || err?.message || err);
+                }
+            }
+        });
+
         socket.ev.on('creds.update', saveCreds);
 
         socket.ev.on('messages.upsert', async (m) => {
