@@ -5,7 +5,7 @@ function limpiarNumero(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
-function numeroDesdeJid(value) {
+function formatearCodigo(value) {\n  const raw = String(value || "").replace(/[^0-9]/g, "");\n  if (raw.length === 6) return raw.slice(0, 3) + "-" + raw.slice(3);\n  return String(value || "");\n}\n\nfunction numeroDesdeJid(value) {
   const raw = String(value || "").split(":")[0];
   if (!raw.endsWith("@s.whatsapp.net")) return "";
   return limpiarNumero(raw.split("@")[0]);
