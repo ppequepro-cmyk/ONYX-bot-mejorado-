@@ -7,7 +7,7 @@ const readline = require('readline');
 const pino = require('pino');
 const chalk = require('chalk');
 const figlet = require('figlet');
-const { establecerOwner } = require("./sistemas/premium");
+const { establecerOwner, obtenerOwnersNotificacion } = require("./sistemas/premium");
 const { list:startSubbots, startExisting:startExistingSubbot } = require("./subbots/manager");
 
 const SESSION_DIR = path.join(__dirname, "sessions");
