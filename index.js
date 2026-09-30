@@ -1,13 +1,16 @@
 require("dotenv").config();
-const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 const pino = require('pino');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const { establecerOwner } = require("./sistemas/premium");
 const { list:startSubbots, startExisting:startExistingSubbot } = require("./subbots/manager");
+
+const SESSION_DIR = path.join(__dirname, "sessions");
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -15,99 +18,166 @@ const rl = readline.createInterface({
 
 const question = (text) => new Promise((resolve) => rl.question(text, resolve));
 
+let reconnectTimer = null;
+let starting = false;
+let connected = false;
+
+function scheduleReconnect() {
+    if (reconnectTimer || starting) return;
+
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        startBot().catch(err => {
+            console.error("Error iniciando ONYX:", err.message);
+            scheduleReconnect();
+        });
+    }, 3000);
+}
+
 async function startBot() {
-    console.clear();
-    figlet('ONYX-BOT', (err, data) => {
-        if (err) {
-            console.log('Error generando el banner ASCII');
-            console.log(err);
-            return;
-        }
-       console.log(chalk.yellow(data));
-    });
+    if (starting) return;
+    starting = true;
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+        console.clear();
+        figlet('ONYX-BOT', (err, data) => {
+            if (!err) console.log(chalk.yellow(data));
+        });
 
-    console.clear();
+        await new Promise(resolve => setTimeout(resolve, 1200));
 
-    const { state, saveCreds } = await useMultiFileAuthState('./sessions');
-    const { version } = await fetchLatestBaileysVersion();
+        fs.mkdirSync(SESSION_DIR, { recursive: true });
 
-    let opcion;
-    if (!fs.existsSync('./sessions/creds.json')) {
-        do {
-            const lineM = '━━━━━━━━━━━━━━━━━━━━';
-            opcion = await question(`╔${lineM}╗
+        const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
+        const { version } = await fetchLatestBaileysVersion();
+
+        let opcion;
+
+        if (!fs.existsSync(path.join(SESSION_DIR, 'creds.json'))) {
+            do {
+                const lineM = '━━━━━━━━━━━━━━━━━━━━';
+                opcion = await question(`╔${lineM}╗
 ❘ ${chalk.bgBlue('          𝗦𝗘𝗟𝗘𝗖𝗖𝗜𝗢𝗡𝗔           ')}
 ❘ ${chalk.bgMagenta('➥')} ${chalk.bold.cyan('1. Conexión mediante QR')}
 ❘ ${chalk.bgMagenta('➥')} ${chalk.green.bold('2. Conexión mediante número de teléfono')}
-╚${lineM}╝\n${chalk.bold.yellow('➥ ')}${chalk.bold.green('➜ ')}`);
+╚${lineM}╝\\n${chalk.bold.yellow('➥ ')}${chalk.bold.green('➜ ')}`);
 
-            if (!/^[1-2]$/.test(opcion)) {
-                console.log(chalk.bold.redBright(`NO SE PERMITE NÚMEROS QUE NO SEAN ${chalk.bold.greenBright("1")} O ${chalk.bold.greenBright("2")}, TAMPOCO LETRAS O SÍMBOLOS ESPECIALES.\n${chalk.bold.yellowBright("CONSEJO: COPIE EL NÚMERO DE LA OPCIÓN Y PÉGUELO EN LA CONSOLA.")}`));
-            }
-        } while (opcion !== '1' && opcion !== '2' || fs.existsSync('./sessions/creds.json'));
-    }
-
-    const socket = makeWASocket({
-        version,
-        auth: state,
-        logger: pino({ level: 'silent' }),
-    });
-
-    if (opcion === '2') {
-        let phoneNumber = await question('Introduce tu número de teléfono (Ej: +123456789): ');
-        phoneNumber = phoneNumber.replace(/\D/g, '');
-        const pairingCode = await socket.requestPairingCode(phoneNumber);
-        console.log(`Código de emparejamiento: ${pairingCode}`);
-    }
-
-    socket.ev.on('connection.update', (update) => {
-        const { connection, qr } = update;
-        if (connection === 'open') {
-            figlet(`ONYX\nBOT`, (err, data) => {
-                if (err) {
-                    console.log('Error generando el banner ASCII');
-                    console.log(err);
-                    return;
+                if (!/^[1-2]$/.test(opcion)) {
+                    console.log(chalk.bold.redBright(`NO SE PERMITE NÚMEROS QUE NO SEAN ${chalk.bold.greenBright("1")} O ${chalk.bold.greenBright("2")}, TAMPOCO LETRAS O SÍMBOLOS ESPECIALES.`));
                 }
-                console.log(chalk.magenta(data));
+            } while (opcion !== '1' && opcion !== '2');
+        }
+
+        const socket = makeWASocket({
+            version,
+            auth: state,
+            logger: pino({ level: 'silent' }),
+            markOnlineOnConnect: false,
+            syncFullHistory: false,
+            generateHighQualityLinkPreview: false
+        });
+
+        if (opcion === '2') {
+            let phoneNumber = await question('Introduce tu número de teléfono (Ej: +123456789): ');
+            phoneNumber = phoneNumber.replace(/\D/g, '');
+            const pairingCode = await socket.requestPairingCode(phoneNumber);
+            console.log(`Código de emparejamiento: ${pairingCode}`);
+        }
+
+        socket.ev.on('connection.update', (update) => {
+            const { connection, lastDisconnect, qr } = update;
+
+            if (connection === 'open') {
+                connected = true;
+                console.log(chalk.green('🟢 ONYX conectado correctamente.'));
                 console.log(`Bot conectado como ${socket.user.id}`);
-                establecerOwner(socket.user.id, socket.user.lid);
+
+                try {
+                    establecerOwner(socket.user.id, socket.user.lid);
+                } catch (err) {
+                    console.error("Error estableciendo owner:", err.message);
+                }
+
                 console.log(`👑 OWNER JID: ${socket.user.id}`);
                 console.log(`👑 OWNER LID: ${socket.user.lid || "no disponible"}`);
-                startSubbots().filter(b=>b.status!=="online").forEach(b=>startExistingSubbot(b.id,async(id,sock,msg)=>{try{const main=require("./main.js");await main.handleMessage(sock,msg)}catch(e){console.error("Subbot "+id+":",e.message)}}).catch(e=>console.error("Subbot "+b.id+":",e.message)));
-            });
-        }
 
-        if (connection === 'close') {
-            console.log(chalk.yellowBright('Bot desconectado, intentando reconectar...'));
-            startBot();
-        }
+                try {
+                    startSubbots()
+                        .filter(b => b.status !== "online")
+                        .forEach(b =>
+                            startExistingSubbot(
+                                b.id,
+                                async (id, sock, msg) => {
+                                    try {
+                                        const main = require("./main.js");
+                                        await main.handleMessage(sock, msg);
+                                    } catch (e) {
+                                        console.error("Subbot " + id + ":", e.message);
+                                    }
+                                }
+                            ).catch(e => console.error("Subbot " + b.id + ":", e.message))
+                        );
+                } catch (err) {
+                    console.error("Error iniciando subbots:", err.message);
+                }
 
-        if (qr) qrcode.generate(qr, { small: true });
-    });
+                return;
+            }
 
-    socket.ev.on('creds.update', saveCreds);
+            if (connection === 'close') {
+                connected = false;
 
-    socket.ev.on('messages.upsert', async (m) => {
-     console.log('📩 MENSAJE RECIBIDO');
-        try {
-            const main = require('./main.js');
-            await main.handleMessage(socket, m.messages[0]);
-        } catch (err) {
-            console.error('Error procesando el mensaje:', err.message);
-        }
-    });
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                const loggedOut = statusCode === DisconnectReason.loggedOut;
 
-    socket.ev.on('group-participants.update', async (update) => {
-        try {
-            const main = require('./main.js');
-            await main.handleGroupEvents(socket, update);
-        } catch (err) {
-            console.error('Error procesando evento de grupo:', err.message);
-        }
-    });
+                console.log(
+                    chalk.yellowBright(
+                        `⚠️ ONYX desconectado (código ${statusCode || "desconocido"}). ` +
+                        (loggedOut ? "Sesión cerrada en WhatsApp." : "Reintentando automáticamente...")
+                    )
+                );
+
+                if (loggedOut) {
+                    console.log(chalk.red("❌ WhatsApp cerró la sesión. No se borrará sessions/ automáticamente."));
+                    return;
+                }
+
+                scheduleReconnect();
+            }
+
+            if (qr) qrcode.generate(qr, { small: true });
+        });
+
+        socket.ev.on('creds.update', saveCreds);
+
+        socket.ev.on('messages.upsert', async (m) => {
+            try {
+                if (!m.messages?.length) return;
+                const main = require('./main.js');
+                await main.handleMessage(socket, m.messages[0]);
+            } catch (err) {
+                console.error('Error procesando el mensaje:', err.message);
+            }
+        });
+
+        socket.ev.on('group-participants.update', async (update) => {
+            try {
+                const main = require('./main.js');
+                await main.handleGroupEvents(socket, update);
+            } catch (err) {
+                console.error('Error procesando evento de grupo:', err.message);
+            }
+        });
+
+        starting = false;
+    } catch (err) {
+        starting = false;
+        console.error("Error iniciando ONYX:", err.message);
+        scheduleReconnect();
+    }
 }
 
-startBot();
+startBot().catch(err => {
+    console.error("Error fatal iniciando ONYX:", err.message);
+    scheduleReconnect();
+});
