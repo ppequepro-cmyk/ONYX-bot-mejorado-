@@ -110,7 +110,7 @@ async function handleMessage(conn, message) {
           (!ownerActivity.has(from) ||
             Date.now() - ownerActivity.get(from) > OWNER_ACTIVE_MS)
         ) {
-          const { preguntarONYX, analizarImagen, buscarImagenes } = require("./ia/ia");
+          const { preguntarONYX, analizarImagen, buscarImagenes, mejorarImagen } = require("./ia/ia");
 
           if (imageMessage) {
             const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
@@ -118,6 +118,26 @@ async function handleMessage(conn, message) {
             const stream = await downloadContentFromMessage(imageMessage, "image");
             for await (const chunk of stream) chunks.push(chunk);
             const imageBuffer = Buffer.concat(chunks);
+
+            const mejorarSolicitado = /(?:mejora|mejorar|mejórala|mejorala|mejorame|mejórame|mejorar esta|mejora esta|aumenta la calidad|sube la calidad|mejora la calidad)/i.test(textBody);
+
+            if (mejorarSolicitado) {
+              try {
+                await conn.sendMessage(from, { text: "✨ Mejorando la imagen..." }, { quoted: message });
+                const imagenMejorada = await mejorarImagen(imageBuffer);
+                const sent = await conn.sendMessage(from, {
+                  image: imagenMejorada,
+                  caption: "✨ *ONYX,IA*\nImagen mejorada automáticamente."
+                }, { quoted: message });
+                if (sent?.key?.id) botMessageIds.add(sent.key.id);
+              } catch (e) {
+                console.error("❌ Mejora automática de imagen:", e.message);
+                await conn.sendMessage(from, {
+                  text: "❌ No pude mejorar la imagen. Verifica que FFmpeg esté instalado."
+                }, { quoted: message });
+              }
+              return;
+            }
 
             const instruccion = textBody || "Analiza esta imagen y dime qué ves.";
             const respuestaImagen = await analizarImagen(
