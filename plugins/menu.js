@@ -2,9 +2,6 @@ const { obtenerUsuario } = require("../usuarios");
 const { obtenerPlan } = require("../sistemas/premium");
 const { commands: megaCommands } = require("./mega");
 
-const MENU_AUDIO = "https://www.image2url.com/r2/default/audio/1790667139010-dfa877b0-5322-4852-b6b8-dd13a970ec5a.mp3";
-const MENU_VIDEO = "https://videotourl.com/videos/1790668998884-34d58391-c3c3-4308-8835-7d330e569cea.mp4";
-
 async function handler(conn, { message, args }) {
   const jid = message.key.remoteJid;
   const u = message.key.participant || jid;
@@ -12,94 +9,61 @@ async function handler(conn, { message, args }) {
   const plan = obtenerPlan(u);
   const nombre = message.pushName || user.nombre || "Usuario";
 
-  const size = 20;
+  const size = 24;
   const total = Math.max(1, Math.ceil(megaCommands.length / size));
-  const page = Math.max(
-    1,
-    Math.min(total, parseInt(args[0] || "1", 10) || 1)
-  );
+  const page = Math.max(1, Math.min(total, parseInt(args[0] || "1", 10) || 1));
+  const shown = megaCommands.slice((page - 1) * size, page * size);
 
-  const groups = [
-    ["🧠 IA", ["/ia", "/iareset"]],
-    ["👥 GRUPOS", [
-      "/grupo", "/infogrupo", "/idgrupo", "/linkgrupo", "/revokelink",
-      "/adminsgrupo", "/miembrosgrupo", "/tagall", "/hidetag", "/tagadmins",
-      "/kickuser", "/adduser", "/promoteuser", "/demoteuser", "/mutechat",
-      "/unmutechat", "/cerrarchat", "/abrirchat", "/soloadmins", "/todoschat",
-      "/setgruponombre", "/setgrupodesc", "/reglasgrupo", "/setreglas",
-      "/setwelcome", "/getwelcome", "/setgoodbye", "/getgoodbye",
-      "/welcomeon", "/welcomeoff", "/goodbyeon", "/goodbyeoff",
-      "/antilinkon", "/antilinkoff", "/warnuser", "/unwarnuser",
-      "/warningsuser", "/clearwarnings", "/listwarnings", "/resetwarnings",
-      "/anuncio", "/adminsinfo", "/ownergrupo", "/creadorgrupo", "/tipochat",
-      "/horariogrupo", "/notasgrupo", "/comandosgrupo", "/seguridadgrupo",
-      "/configgrupo"
+  const sections = [
+    ["🧠 IA & AUTOMATIZACIÓN", ["/ia", "/iareset", "/chat on", "/chat off", "/chat status"]],
+    ["👥 GRUPOS & MODERACIÓN", [
+      "/grupo", "/infogrupo", "/idgrupo", "/linkgrupo", "/adminsgrupo",
+      "/miembrosgrupo", "/tagall", "/hidetag", "/tagadmins", "/kickuser",
+      "/adduser", "/promoteuser", "/demoteuser", "/mutechat", "/unmutechat",
+      "/cerrarchat", "/abrirchat", "/soloadmins", "/todoschat", "/antilinkon",
+      "/antilinkoff", "/warnuser", "/warningsuser", "/clearwarnings",
+      "/welcomeon", "/welcomeoff", "/goodbyeon", "/goodbyeoff"
     ]],
-    ["🛠️ UTILIDADES", [
-      "/ping", "/uptime", "/menu", "/menubtns", "/menunrml", "/alive",
-      "/botinfo", "/version", "/time", "/date", "/timezone", "/jid",
-      "/runtime", "/stats", "/health", "/memory", "/serverinfo"
+    ["📥 MULTIMEDIA", [
+      "/play", "/song", "/ytmp3", "/ytmp4", "/youtube", "/tiktok",
+      "/tiktokmp4", "/igdl", "/twitterdl", "/facebookdl",
+      "/pinterestdl", "/mediafire"
     ]],
-    ["🤖 SUBBOTS", [
-      "/subbot list", "/subbot create <nombre> <número>", "/subbot start <nombre>",
-      "/subbot stop <nombre>", "/subbot remove <nombre>",
-      "/subbot allow <nombre> <comando>", "/subbot deny <nombre> <comando>",
-      "/subbot commands <nombre>"
+    ["🛠️ SISTEMA", [
+      "/ping", "/ram", "/uptime", "/runtime", "/health", "/stats",
+      "/serverinfo", "/botinfo", "/version", "/time", "/date", "/jid"
     ]],
     ["💎 PREMIUM", ["/plan", "/premium", "/beneficios", "/premiuminfo"]],
-    ["👑 OWNER", ["/addprem", "/delprem", "/autoadmin", "/restart"]]
+    ["🤖 SUBBOTS", [
+      "/subbot list", "/subbot create <nombre> <número>", "/subbot start <nombre>",
+      "/subbot stop <nombre>", "/subbot remove <nombre>"
+    ]],
+    ["👑 OWNER", ["/ceo", "/addprem", "/delprem", "/autoadmin", "/restart", "/shutdown", "/reload", "/update"]]
   ];
 
-  const base = groups
-    .map(([h, cs]) => h + "\n" + cs.map(x => "• " + x).join("\n"))
+  const header =
+    "╭━━━〔 ☠️ ONYX-BOT 〕━━━╮\n" +
+    "┃ 🖤 *Centro de comandos*\n" +
+    "┃ 👤 " + nombre + "\n" +
+    "┃ 💎 Plan: *" + String(plan).toUpperCase() + "*\n" +
+    "╰━━━━━━━━━━━━━━━━━━━━╯";
+
+  const quick = sections
+    .map(([title, cmds]) => title + "\n" + cmds.map(x => "  › " + x).join("\n"))
     .join("\n\n");
 
-  const shown = megaCommands.slice((page - 1) * size, page * size);
   const catalog =
-    "\n\n📚 *CATÁLOGO ONYX* · Página " +
-    page +
-    "/" +
-    total +
-    " · " +
-    megaCommands.length +
-    " comandos registrados\n" +
-    shown.map(x => "• /" + x).join("\n");
+    "📚 *CATÁLOGO COMPLETO*\n" +
+    "Página *" + page + "/" + total + "* · *" + megaCommands.length + "* registrados\n\n" +
+    shown.map((x, i) => String((page - 1) * size + i + 1).padStart(3, "0") + " › /" + x).join("\n");
 
-  const menu =
-    "╔══════════════════════════════╗\n" +
-    "║        ☠️  ONYX-BOT  ☠️       ║\n" +
-    "╚══════════════════════════════╝\n\n" +
-    "☠️ *ONYX-BOT*\n" +
-    "🤖 Bot de WhatsApp · IA · Premium · Automatizado\n" +
-    "📦 *Comandos registrados:* " + megaCommands.length + "\n" +
-    "📖 Usa /menu 2, /menu 3, etc. para navegar el catálogo.\n\n" +
-    "👤 *USUARIO*\n" +
-    "• Nombre: " + nombre + "\n" +
-    "• Plan: " + String(plan).toUpperCase() + "\n\n" +
-    base +
-    catalog +
+  const footer =
     "\n\n━━━━━━━━━━━━━━━━━━━━\n" +
-    "👑 ı.ᴀᴍ.oɴʏxᴋıɴɢ👑";
+    "📌 Usa */menu 2*, */menu 3*... para navegar.\n" +
+    "🧠 IA privada automática: */chat on|off|status*\n" +
+    "👑 Owner: *ı.ᴀᴍ.oɴʏxᴋıɴɢ👑*";
 
-  try {
-    await conn.sendMessage(
-      jid,
-      { audio: { url: MENU_AUDIO }, mimetype: "audio/mpeg", ptt: false },
-      { quoted: message }
-    );
-  } catch (e) {
-    console.error("⚠️ Audio del menú no disponible:", e.message);
-  }
-
-  try {
-    await conn.sendMessage(
-      jid,
-      { video: { url: MENU_VIDEO }, mimetype: "video/mp4" },
-      { quoted: message }
-    );
-  } catch (e) {
-    console.error("⚠️ Video del menú no disponible:", e.message);
-  }
+  const menu = header + "\n\n" + quick + "\n\n" + catalog + footer;
 
   await conn.sendMessage(jid, { text: menu }, { quoted: message });
 }
