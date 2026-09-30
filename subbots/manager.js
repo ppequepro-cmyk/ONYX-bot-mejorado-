@@ -19,7 +19,7 @@ function bind(id,sock,saveCreds,onMessage){
     const d=read(),bot=d.bots[id];if(!bot)return;
     if(u.connection==="open"){bot.status="online";bot.lastConnectedAt=new Date().toISOString();delete bot.pairingCode;write(d);reconnecting.delete(id);console.log("🟢 Subbot conectado:",id);return}
     if(u.connection==="close"){
-      const shouldReconnect=bot.status==="online";bot.status="offline";bot.lastDisconnectAt=new Date().toISOString();write(d);sockets.delete(id);
+      const shouldReconnect=bot.status==="online"||bot.status==="pairing";bot.status="offline";bot.lastDisconnectAt=new Date().toISOString();write(d);sockets.delete(id);
       if(shouldReconnect&&!reconnecting.has(id)){reconnecting.add(id);console.log("🔄 Reconectando subbot:",id);setTimeout(async()=>{try{await startExisting(id,onMessage)}catch(e){console.error("❌ Reconexión de subbot "+id+":",e.message)}finally{reconnecting.delete(id)}},3000)}
       else console.error("Subbot "+id+" desconectado:",u.lastDisconnect?.error?.message||"connection closed");
     }
