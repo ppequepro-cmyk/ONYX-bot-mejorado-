@@ -28,6 +28,28 @@ function bind(id,sock,saveCreds,onMessage){
   });
   sock.ev.on("messages.upsert",async m=>{try{for(const msg of m.messages||[]){if(msg&&onMessage)await onMessage(id,sock,msg)}}catch(e){console.error("Subbot "+id+":",e.message)}})
 }
+async function requestCode(phone,onMessage){
+  ensure();
+  const clean=String(phone||"").replace(/\\D/g,"");
+  if(clean.length<8||clean.length>15)throw Error("Número inválido. Usa el número completo con código de país.");
+  const id=safe("subbot_"+clean);
+  const d=read();
+  if(d.bots[id])throw Error("Ya existe un subbot para ese número. Usa /subbot start "+id);
+  const dir=path.join(ROOT,id,"sessions");fs.mkdirSync(dir,{recursive:true});
+  const{state,saveCreds}=await useMultiFileAuthState(dir);
+  const{version}=await fetchLatestBaileysVersion();
+  const sock=makeWASocket(socketOptions(state,version));
+  const bot={id,name:id,phone:clean,status:"pairing",createdAt:new Date().toISOString()};
+  d.bots[id]=bot;write(d);bind(id,sock,saveCreds,onMessage);
+  if(state.creds.registered){bot.status="online";write(read());return bot}
+  await delay(2000);
+  if(state.creds.registered){bot.status="online";write(read());return bot}
+  const code=await sock.requestPairingCode(clean);
+  bot.pairingCode=String(code);bot.status="pairing";bot.pairingUpdatedAt=new Date().toISOString();write(read());
+  console.log("📲 Código generado para",clean,":",code);
+  return bot;
+}
+
 async function create(name,phone,onMessage){
   ensure();const id=safe(name);if(!id)throw Error("Nombre inválido");const clean=String(phone||"").replace(/\D/g,"");if(clean.length<8||clean.length>15)throw Error("Número inválido. Usa el número completo con código de país.");
   const d=read();if(d.bots[id])throw Error("Ese subbot ya existe");const dir=path.join(ROOT,id,"sessions");fs.mkdirSync(dir,{recursive:true});
@@ -49,4 +71,4 @@ async function startExisting(id,onMessage){
   if(!fs.existsSync(path.join(dir,"creds.json"))){bot.status="pairing";write(d);return bot}
   const{state,saveCreds}=await useMultiFileAuthState(dir);const{version}=await fetchLatestBaileysVersion();const sock=makeWASocket(socketOptions(state,version));bind(id,sock,saveCreds,onMessage);bot.status=state.creds.registered?"starting":"pairing";write(read());return bot
 }
-module.exports={create,stop,remove,list,startExisting,isCommandAllowed,setAllowedCommands,getCommandPolicy};
+module.exports={create,requestCode,stop,remove,list,startExisting,isCommandAllowed,setAllowedCommands,getCommandPolicy};
