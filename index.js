@@ -51,21 +51,23 @@ async function startBot() {
         const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
         const { version } = await fetchLatestBaileysVersion();
 
-        let opcion;
+        let opcion = null;
+        const hasCreds = fs.existsSync(path.join(SESSION_DIR, "creds.json"));
 
-        if (!fs.existsSync(path.join(SESSION_DIR, 'creds.json'))) {
+        if (!hasCreds) {
+            console.log(chalk.yellowBright("\n📱 Sesión nueva de ONYX."));
+            console.log(chalk.cyan("1. Escanea el QR desde WhatsApp."));
+            console.log(chalk.cyan("2. Si prefieres código de vinculación, usa la opción 2.\n"));
+
             do {
-                const lineM = '━━━━━━━━━━━━━━━━━━━━';
-                opcion = await question(`╔${lineM}╗
-❘ ${chalk.bgBlue('          𝗦𝗘𝗟𝗘𝗖𝗖𝗜𝗢𝗡𝗔           ')}
-❘ ${chalk.bgMagenta('➥')} ${chalk.bold.cyan('1. Conexión mediante QR')}
-❘ ${chalk.bgMagenta('➥')} ${chalk.green.bold('2. Conexión mediante número de teléfono')}
-╚${lineM}╝\\n${chalk.bold.yellow('➥ ')}${chalk.bold.green('➜ ')}`);
+                opcion = await question(
+                    chalk.bold.yellow("➜ Selecciona 1 para QR o 2 para código de vinculación: ")
+                );
 
-                if (!/^[1-2]$/.test(opcion)) {
-                    console.log(chalk.bold.redBright(`NO SE PERMITE NÚMEROS QUE NO SEAN ${chalk.bold.greenBright("1")} O ${chalk.bold.greenBright("2")}, TAMPOCO LETRAS O SÍMBOLOS ESPECIALES.`));
+                if (opcion !== "1" && opcion !== "2") {
+                    console.log(chalk.red("❌ Escribe solamente 1 o 2."));
                 }
-            } while (opcion !== '1' && opcion !== '2');
+            } while (opcion !== "1" && opcion !== "2");
         }
 
         const socket = makeWASocket({
@@ -76,12 +78,22 @@ async function startBot() {
             syncFullHistory: false,
             generateHighQualityLinkPreview: false
         });
+        if (opcion === "2") {
+            try {
+                let phoneNumber = await question("Introduce el número con código de país (ej. 521XXXXXXXXXX): ");
+                phoneNumber = phoneNumber.replace(/\D/g, "");
 
-        if (opcion === '2') {
-            let phoneNumber = await question('Introduce tu número de teléfono (Ej: +123456789): ');
-            phoneNumber = phoneNumber.replace(/\D/g, '');
-            const pairingCode = await socket.requestPairingCode(phoneNumber);
-            console.log(`Código de emparejamiento: ${pairingCode}`);
+                if (!phoneNumber) {
+                    throw new Error("Número de teléfono vacío.");
+                }
+
+                console.log(chalk.yellow("⏳ Solicitando código de vinculación..."));
+                const pairingCode = await socket.requestPairingCode(phoneNumber);
+                console.log(chalk.greenBright("\n🔐 CÓDIGO DE VINCULACIÓN: " + pairingCode));
+                console.log(chalk.cyan("En WhatsApp abre Dispositivos vinculados → Vincular con número de teléfono.\n"));
+            } catch (err) {
+                console.error(chalk.red("❌ No se pudo generar el código:"), err.message);
+            }
         }
 
         socket.ev.on('connection.update', (update) => {
@@ -145,7 +157,11 @@ async function startBot() {
                 scheduleReconnect();
             }
 
-            if (qr) qrcode.generate(qr, { small: true });
+            if (qr) {
+                console.log(chalk.greenBright("\n📲 ESCANEA ESTE QR CON WHATSAPP:\n"));
+                qrcode.generate(qr, { small: true });
+                console.log(chalk.cyan("\nWhatsApp → Dispositivos vinculados → Vincular dispositivo"));
+            }
         });
 
         socket.ev.on('creds.update', saveCreds);
