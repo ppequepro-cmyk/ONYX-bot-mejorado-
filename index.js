@@ -141,12 +141,16 @@ async function startBot() {
         socket.ev.on('creds.update', saveCreds);
 
         socket.ev.on('messages.upsert', async (m) => {
-            try {
-                if (!m.messages?.length) return;
-                const main = require('./main.js');
-                await main.handleMessage(socket, m.messages[0]);
-            } catch (err) {
-                console.error('Error procesando el mensaje:', err.message);
+            if (!m.messages?.length) return;
+
+            const main = require('./main.js');
+
+            for (const message of m.messages) {
+                try {
+                    await main.handleMessage(socket, message);
+                } catch (err) {
+                    console.error('❌ Error procesando mensaje:', err?.stack || err?.message || err);
+                }
             }
         });
 
